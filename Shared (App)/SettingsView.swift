@@ -12,20 +12,27 @@ struct OpenCCSettingsView: View {
     @Environment(\.openURL) private var openURL
 
     var body: some View {
-        VStack(spacing: 20) {
+        ContainerView {
             HStack(alignment: .top, spacing: 16) {
+#if os(macOS)
                 appIcon
                     .frame(maxHeight: 80)
+#endif
 
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Text("CC Converter")
 #if os(macOS)
+                        Text("CC Converter")
                             .font(.largeTitle.weight(.bold))
-#else
-                            .font(.body.weight(.bold))
-#endif
                             .fixedSize()
+#else
+                        Label {
+                            Text("CC Converter")
+                        } icon: {
+                            Text("字")
+                        }
+                        .font(.headline)
+#endif
                         
                         Button {
                             if let url = URL(string: "https://github.com/Vaida12345/OpenCC-safari-extension") {
@@ -51,8 +58,7 @@ struct OpenCCSettingsView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
-            .padding(20)
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .modifier(SectionModifier())
 
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
@@ -87,16 +93,18 @@ struct OpenCCSettingsView: View {
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(20)
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .modifier(SectionModifier())
             
             privacySection
+                .modifier(SectionModifier())
+            
             creditsSection
+                .modifier(SectionModifier())
         }
+#if os(macOS)
         .padding(24)
-        #if os(macOS)
         .frame(width: 480)
-        #endif
+#endif
     }
 
     /// Displays privacy details for local-only conversion and stored data scope.
@@ -119,8 +127,6 @@ struct OpenCCSettingsView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(20)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
     /// Displays attribution for open-source components used by the app.
@@ -136,8 +142,6 @@ struct OpenCCSettingsView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(20)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
     /// Provides the GitHub repository URL displayed in settings.
@@ -220,6 +224,45 @@ struct OpenCCSettingsView: View {
         "You can manage CC Converter in Settings > Safari > Extensions."
     }
 #endif
+}
+
+
+struct SectionModifier: ViewModifier {
+    func body(content: Content) -> some View {
+#if os(macOS)
+        content
+            .padding(20)
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+#else
+        Section {
+            content
+                .padding(10)
+        }
+#endif
+    }
+}
+
+struct ContainerView<ChildView: View>: View {
+    
+    let childView: () -> ChildView
+    
+    
+    var body: some View {
+        #if os(macOS)
+        VStack(spacing: 20) {
+            childView()
+        }
+        #else
+        List {
+            childView()
+        }
+        #endif
+    }
+    
+    init(@ViewBuilder childView: @escaping () -> ChildView) {
+        self.childView = childView
+    }
+    
 }
 
 #Preview {
