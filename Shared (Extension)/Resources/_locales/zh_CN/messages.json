@@ -1,0 +1,66 @@
+{
+    "extension_name": {
+        "message": "CC 转换器",
+        "description": "扩展的显示名称。"
+    },
+    "extension_description": {
+        "message": "使用 OpenCC 转换网页中的中文文本，并可配置转换预设。",
+        "description": "扩展功能说明。"
+    },
+    "popup_enable_conversion": {
+        "message": "启用转换",
+        "description": "启用或禁用文本转换的开关标签。"
+    },
+    "popup_input_text": {
+        "message": "输入文本",
+        "description": "源语言选择控件标签。"
+    },
+    "popup_output_text": {
+        "message": "输出文本",
+        "description": "目标语言选择控件标签。"
+    },
+    "popup_convert_now": {
+        "message": "立即转换此页面",
+        "description": "立即转换当前页面的按钮文本。"
+    },
+    "popup_status_saved": {
+        "message": "已保存",
+        "description": "设置保存后显示的状态后缀。"
+    },
+    "popup_status_conversion_requested": {
+        "message": "已请求转换当前标签页",
+        "description": "请求转换当前标签页后显示的状态后缀。"
+    },
+    "popup_status_failed_load_settings": {
+        "message": "加载设置失败",
+        "description": "弹窗初始化失败时显示的错误文本。"
+    },
+    "preset_simplified_chinese": {
+        "message": "简体中文",
+        "description": "简体中文预设标签。"
+    },
+    "preset_traditional_chinese_opencc": {
+        "message": "繁体中文（OpenCC）",
+        "description": "OpenCC 繁体中文预设标签。"
+    },
+    "preset_taiwan_traditional": {
+        "message": "台湾繁体",
+        "description": "台湾繁体中文预设标签。"
+    },
+    "preset_hong_kong_traditional": {
+        "message": "香港繁体",
+        "description": "香港繁体中文预设标签。"
+    },
+    "preset_taiwan_traditional_idioms": {
+        "message": "台湾繁体 + 惯用词",
+        "description": "台湾繁体中文（含惯用词）预设标签。"
+    },
+    "preset_traditional_kyujitai": {
+        "message": "繁体（旧字体）",
+        "description": "日文旧字体预设标签。"
+    },
+    "preset_japanese_shinjitai": {
+        "message": "日文（新字体）",
+        "description": "日文新字体预设标签。"
+    }
+}

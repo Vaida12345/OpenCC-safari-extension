@@ -10,7 +10,7 @@
     <main class="popup-shell">
         <section class="settings-card">
             <label class="toggle-row" for="enabled-toggle">
-                <span>Enable Conversion</span>
+                <span data-i18n="popup_enable_conversion">Enable Conversion</span>
                 <span class="toggle">
                     <input id="enabled-toggle" type="checkbox" role="switch">
                     <span class="track" aria-hidden="true"></span>
@@ -19,17 +19,17 @@
 
             <div class="field-grid">
                 <label class="field" for="input-select">
-                    <span>Input Text</span>
+                    <span data-i18n="popup_input_text">Input Text</span>
                     <select id="input-select"></select>
                 </label>
 
                 <label class="field" for="output-select">
-                    <span>Output Text</span>
+                    <span data-i18n="popup_output_text">Output Text</span>
                     <select id="output-select"></select>
                 </label>
             </div>
 
-            <button id="convert-now" type="button">Convert This Page Now</button>
+            <button id="convert-now" type="button" data-i18n="popup_convert_now">Convert This Page Now</button>
             <p id="status" role="status" aria-live="polite"></p>
         </section>
     </main>

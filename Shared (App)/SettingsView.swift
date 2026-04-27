@@ -56,7 +56,7 @@ struct OpenCCSettingsView: View {
 
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
-                    Label("App Extension", systemImage: "safari")
+                    Label("Safari Extension", systemImage: "safari")
                         .font(.headline)
 
                     Spacer(minLength: 0)

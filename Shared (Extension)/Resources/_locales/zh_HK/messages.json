@@ -1,0 +1,66 @@
+{
+    "extension_name": {
+        "message": "CC 轉換器",
+        "description": "擴充功能顯示名稱。"
+    },
+    "extension_description": {
+        "message": "使用 OpenCC 轉換網頁中的中文文字，並可自訂轉換預設。",
+        "description": "擴充功能用途說明。"
+    },
+    "popup_enable_conversion": {
+        "message": "啟用轉換",
+        "description": "啟用或停用文字轉換的開關標籤。"
+    },
+    "popup_input_text": {
+        "message": "輸入文字",
+        "description": "來源語言選擇欄位標籤。"
+    },
+    "popup_output_text": {
+        "message": "輸出文字",
+        "description": "目標語言選擇欄位標籤。"
+    },
+    "popup_convert_now": {
+        "message": "即時轉換此頁",
+        "description": "立即轉換目前頁面的按鈕文字。"
+    },
+    "popup_status_saved": {
+        "message": "已儲存",
+        "description": "儲存設定後顯示的狀態後綴。"
+    },
+    "popup_status_conversion_requested": {
+        "message": "已要求轉換目前分頁",
+        "description": "要求轉換目前分頁後顯示的狀態後綴。"
+    },
+    "popup_status_failed_load_settings": {
+        "message": "載入設定失敗",
+        "description": "彈出視窗初始化失敗時顯示的錯誤訊息。"
+    },
+    "preset_simplified_chinese": {
+        "message": "簡體中文",
+        "description": "簡體中文預設標籤。"
+    },
+    "preset_traditional_chinese_opencc": {
+        "message": "繁體中文（OpenCC）",
+        "description": "OpenCC 繁體中文預設標籤。"
+    },
+    "preset_taiwan_traditional": {
+        "message": "台灣繁體",
+        "description": "台灣繁體中文預設標籤。"
+    },
+    "preset_hong_kong_traditional": {
+        "message": "香港繁體",
+        "description": "香港繁體中文預設標籤。"
+    },
+    "preset_taiwan_traditional_idioms": {
+        "message": "台灣繁體 + 慣用語",
+        "description": "台灣繁體中文（含慣用語）預設標籤。"
+    },
+    "preset_traditional_kyujitai": {
+        "message": "繁體（舊字體）",
+        "description": "日文舊字體預設標籤。"
+    },
+    "preset_japanese_shinjitai": {
+        "message": "日文（新字體）",
+        "description": "日文新字體預設標籤。"
+    }
+}

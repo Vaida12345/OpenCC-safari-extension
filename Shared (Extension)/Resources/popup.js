@@ -1,20 +1,132 @@
 const OPENCC_PRESETS = [
-    { value: "s2t", inputValue: "simplified", inputLabel: "Simplified Chinese", outputLabel: "Traditional Chinese (OpenCC)" },
-    { value: "t2s", inputValue: "traditional", inputLabel: "Traditional Chinese (OpenCC)", outputLabel: "Simplified Chinese" },
-    { value: "s2tw", inputValue: "simplified", inputLabel: "Simplified Chinese", outputLabel: "Taiwan Traditional" },
-    { value: "tw2s", inputValue: "taiwan", inputLabel: "Taiwan Traditional", outputLabel: "Simplified Chinese" },
-    { value: "s2hk", inputValue: "simplified", inputLabel: "Simplified Chinese", outputLabel: "Hong Kong Traditional" },
-    { value: "hk2s", inputValue: "hongkong", inputLabel: "Hong Kong Traditional", outputLabel: "Simplified Chinese" },
-    { value: "s2twp", inputValue: "simplified", inputLabel: "Simplified Chinese", outputLabel: "Taiwan Traditional + idioms" },
-    { value: "tw2sp", inputValue: "taiwan-idioms", inputLabel: "Taiwan Traditional + idioms", outputLabel: "Simplified Chinese" },
-    { value: "t2tw", inputValue: "traditional", inputLabel: "Traditional Chinese (OpenCC)", outputLabel: "Taiwan Traditional" },
-    { value: "tw2t", inputValue: "taiwan", inputLabel: "Taiwan Traditional", outputLabel: "Traditional Chinese (OpenCC)" },
-    { value: "t2twp", inputValue: "traditional", inputLabel: "Traditional Chinese (OpenCC)", outputLabel: "Taiwan Traditional + idioms" },
-    { value: "tw2tp", inputValue: "taiwan-idioms", inputLabel: "Taiwan Traditional + idioms", outputLabel: "Traditional Chinese (OpenCC)" },
-    { value: "t2hk", inputValue: "traditional", inputLabel: "Traditional Chinese (OpenCC)", outputLabel: "Hong Kong Traditional" },
-    { value: "hk2t", inputValue: "hongkong", inputLabel: "Hong Kong Traditional", outputLabel: "Traditional Chinese (OpenCC)" },
-    { value: "t2jp", inputValue: "traditional-kyujitai", inputLabel: "Traditional (Kyujitai)", outputLabel: "Japanese (Shinjitai)" },
-    { value: "jp2t", inputValue: "japanese-shinjitai", inputLabel: "Japanese (Shinjitai)", outputLabel: "Traditional (Kyujitai)" }
+    {
+        value: "s2t",
+        inputValue: "simplified",
+        inputLabelKey: "preset_simplified_chinese",
+        inputLabelFallback: "Simplified Chinese",
+        outputLabelKey: "preset_traditional_chinese_opencc",
+        outputLabelFallback: "Traditional Chinese (OpenCC)"
+    },
+    {
+        value: "t2s",
+        inputValue: "traditional",
+        inputLabelKey: "preset_traditional_chinese_opencc",
+        inputLabelFallback: "Traditional Chinese (OpenCC)",
+        outputLabelKey: "preset_simplified_chinese",
+        outputLabelFallback: "Simplified Chinese"
+    },
+    {
+        value: "s2tw",
+        inputValue: "simplified",
+        inputLabelKey: "preset_simplified_chinese",
+        inputLabelFallback: "Simplified Chinese",
+        outputLabelKey: "preset_taiwan_traditional",
+        outputLabelFallback: "Taiwan Traditional"
+    },
+    {
+        value: "tw2s",
+        inputValue: "taiwan",
+        inputLabelKey: "preset_taiwan_traditional",
+        inputLabelFallback: "Taiwan Traditional",
+        outputLabelKey: "preset_simplified_chinese",
+        outputLabelFallback: "Simplified Chinese"
+    },
+    {
+        value: "s2hk",
+        inputValue: "simplified",
+        inputLabelKey: "preset_simplified_chinese",
+        inputLabelFallback: "Simplified Chinese",
+        outputLabelKey: "preset_hong_kong_traditional",
+        outputLabelFallback: "Hong Kong Traditional"
+    },
+    {
+        value: "hk2s",
+        inputValue: "hongkong",
+        inputLabelKey: "preset_hong_kong_traditional",
+        inputLabelFallback: "Hong Kong Traditional",
+        outputLabelKey: "preset_simplified_chinese",
+        outputLabelFallback: "Simplified Chinese"
+    },
+    {
+        value: "s2twp",
+        inputValue: "simplified",
+        inputLabelKey: "preset_simplified_chinese",
+        inputLabelFallback: "Simplified Chinese",
+        outputLabelKey: "preset_taiwan_traditional_idioms",
+        outputLabelFallback: "Taiwan Traditional + idioms"
+    },
+    {
+        value: "tw2sp",
+        inputValue: "taiwan-idioms",
+        inputLabelKey: "preset_taiwan_traditional_idioms",
+        inputLabelFallback: "Taiwan Traditional + idioms",
+        outputLabelKey: "preset_simplified_chinese",
+        outputLabelFallback: "Simplified Chinese"
+    },
+    {
+        value: "t2tw",
+        inputValue: "traditional",
+        inputLabelKey: "preset_traditional_chinese_opencc",
+        inputLabelFallback: "Traditional Chinese (OpenCC)",
+        outputLabelKey: "preset_taiwan_traditional",
+        outputLabelFallback: "Taiwan Traditional"
+    },
+    {
+        value: "tw2t",
+        inputValue: "taiwan",
+        inputLabelKey: "preset_taiwan_traditional",
+        inputLabelFallback: "Taiwan Traditional",
+        outputLabelKey: "preset_traditional_chinese_opencc",
+        outputLabelFallback: "Traditional Chinese (OpenCC)"
+    },
+    {
+        value: "t2twp",
+        inputValue: "traditional",
+        inputLabelKey: "preset_traditional_chinese_opencc",
+        inputLabelFallback: "Traditional Chinese (OpenCC)",
+        outputLabelKey: "preset_taiwan_traditional_idioms",
+        outputLabelFallback: "Taiwan Traditional + idioms"
+    },
+    {
+        value: "tw2tp",
+        inputValue: "taiwan-idioms",
+        inputLabelKey: "preset_taiwan_traditional_idioms",
+        inputLabelFallback: "Taiwan Traditional + idioms",
+        outputLabelKey: "preset_traditional_chinese_opencc",
+        outputLabelFallback: "Traditional Chinese (OpenCC)"
+    },
+    {
+        value: "t2hk",
+        inputValue: "traditional",
+        inputLabelKey: "preset_traditional_chinese_opencc",
+        inputLabelFallback: "Traditional Chinese (OpenCC)",
+        outputLabelKey: "preset_hong_kong_traditional",
+        outputLabelFallback: "Hong Kong Traditional"
+    },
+    {
+        value: "hk2t",
+        inputValue: "hongkong",
+        inputLabelKey: "preset_hong_kong_traditional",
+        inputLabelFallback: "Hong Kong Traditional",
+        outputLabelKey: "preset_traditional_chinese_opencc",
+        outputLabelFallback: "Traditional Chinese (OpenCC)"
+    },
+    {
+        value: "t2jp",
+        inputValue: "traditional-kyujitai",
+        inputLabelKey: "preset_traditional_kyujitai",
+        inputLabelFallback: "Traditional (Kyujitai)",
+        outputLabelKey: "preset_japanese_shinjitai",
+        outputLabelFallback: "Japanese (Shinjitai)"
+    },
+    {
+        value: "jp2t",
+        inputValue: "japanese-shinjitai",
+        inputLabelKey: "preset_japanese_shinjitai",
+        inputLabelFallback: "Japanese (Shinjitai)",
+        outputLabelKey: "preset_traditional_kyujitai",
+        outputLabelFallback: "Traditional (Kyujitai)"
+    }
 ];
 
 const DEFAULT_CONFIG = "t2s";
@@ -26,9 +138,55 @@ const convertNowButton = document.getElementById("convert-now");
 const status = document.getElementById("status");
 
 /**
+ * Returns a localized extension string with fallback text.
+ * @param {string} key Localization key.
+ * @param {string} fallback Fallback text when key is missing.
+ * @returns {string} Localized text.
+ */
+function t(key, fallback) {
+    const localized = browser.i18n.getMessage(key);
+    return localized || fallback;
+}
+
+/**
+ * Resolves localized input label for a preset.
+ * @param {{inputLabelKey: string, inputLabelFallback: string}} preset OpenCC preset.
+ * @returns {string} Localized input label.
+ */
+function getInputLabel(preset) {
+    return t(preset.inputLabelKey, preset.inputLabelFallback);
+}
+
+/**
+ * Resolves localized output label for a preset.
+ * @param {{outputLabelKey: string, outputLabelFallback: string}} preset OpenCC preset.
+ * @returns {string} Localized output label.
+ */
+function getOutputLabel(preset) {
+    return t(preset.outputLabelKey, preset.outputLabelFallback);
+}
+
+/**
+ * Localizes static popup labels declared in markup.
+ */
+function localizeStaticText() {
+    const elements = document.querySelectorAll("[data-i18n]");
+
+    elements.forEach((element) => {
+        const key = element.dataset.i18n;
+        if (typeof key !== "string") {
+            return;
+        }
+
+        const fallback = element.textContent?.trim() ?? "";
+        element.textContent = t(key, fallback);
+    });
+}
+
+/**
  * Finds preset by config key.
  * @param {string | undefined} config OpenCC config key.
- * @returns {{value: string, inputValue: string, inputLabel: string, outputLabel: string} | undefined}
+ * @returns {{value: string, inputValue: string, inputLabelKey: string, inputLabelFallback: string, outputLabelKey: string, outputLabelFallback: string} | undefined}
  */
 function getPreset(config) {
     return OPENCC_PRESETS.find((item) => item.value === config);
@@ -49,7 +207,7 @@ function renderInputOptions() {
         seenInputs.add(item.inputValue);
         const option = document.createElement("option");
         option.value = item.inputValue;
-        option.textContent = item.inputLabel;
+        option.textContent = getInputLabel(item);
         fragment.appendChild(option);
     });
 
@@ -69,7 +227,7 @@ function renderOutputOptions(inputValue, preferredConfig) {
     supportedOutputs.forEach((item) => {
         const option = document.createElement("option");
         option.value = item.value;
-        option.textContent = item.outputLabel;
+        option.textContent = getOutputLabel(item);
         fragment.appendChild(option);
     });
 
@@ -96,7 +254,7 @@ function setModeStatus(config, suffix) {
         return;
     }
 
-    const modeText = `${preset.inputLabel} → ${preset.outputLabel}`;
+    const modeText = `${getInputLabel(preset)} → ${getOutputLabel(preset)}`;
     status.textContent = suffix ? `${modeText} • ${suffix}` : modeText;
 }
 
@@ -133,7 +291,7 @@ async function saveSettings() {
     });
 
     applySettingsToUI(settings);
-    setModeStatus(settings.config, "Saved");
+    setModeStatus(settings.config, t("popup_status_saved", "Saved"));
 }
 
 /**
@@ -141,13 +299,17 @@ async function saveSettings() {
  */
 async function convertNow() {
     await browser.runtime.sendMessage({ type: "opencc.convertNow" });
-    setModeStatus(outputSelect.value, "Conversion requested for active tab");
+    setModeStatus(
+        outputSelect.value,
+        t("popup_status_conversion_requested", "Conversion requested for active tab")
+    );
 }
 
 /**
  * Initializes popup state and event handlers.
  */
 async function initPopup() {
+    localizeStaticText();
     renderInputOptions();
     renderOutputOptions(inputSelect.value, DEFAULT_CONFIG);
 
@@ -164,5 +326,5 @@ async function initPopup() {
 }
 
 initPopup().catch(() => {
-    status.textContent = "Failed to load settings";
+    status.textContent = t("popup_status_failed_load_settings", "Failed to load settings");
 });

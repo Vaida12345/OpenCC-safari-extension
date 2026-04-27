@@ -6,5 +6,61 @@
     "extension_description": {
         "message": "Converts Chinese text on web pages using OpenCC with configurable conversion presets.",
         "description": "Description of what the extension does."
+    },
+    "popup_enable_conversion": {
+        "message": "Enable Conversion",
+        "description": "Toggle label to enable or disable text conversion."
+    },
+    "popup_input_text": {
+        "message": "Input Text",
+        "description": "Label for the source language select control."
+    },
+    "popup_output_text": {
+        "message": "Output Text",
+        "description": "Label for the target language select control."
+    },
+    "popup_convert_now": {
+        "message": "Convert This Page Now",
+        "description": "Button text to immediately convert the active page."
+    },
+    "popup_status_saved": {
+        "message": "Saved",
+        "description": "Status suffix shown after settings are saved."
+    },
+    "popup_status_conversion_requested": {
+        "message": "Conversion requested for active tab",
+        "description": "Status suffix shown after requesting conversion on the active tab."
+    },
+    "popup_status_failed_load_settings": {
+        "message": "Failed to load settings",
+        "description": "Error text shown when popup initialization fails."
+    },
+    "preset_simplified_chinese": {
+        "message": "Simplified Chinese",
+        "description": "Preset label for Simplified Chinese."
+    },
+    "preset_traditional_chinese_opencc": {
+        "message": "Traditional Chinese (OpenCC)",
+        "description": "Preset label for OpenCC Traditional Chinese."
+    },
+    "preset_taiwan_traditional": {
+        "message": "Taiwan Traditional",
+        "description": "Preset label for Taiwan Traditional Chinese."
+    },
+    "preset_hong_kong_traditional": {
+        "message": "Hong Kong Traditional",
+        "description": "Preset label for Hong Kong Traditional Chinese."
+    },
+    "preset_taiwan_traditional_idioms": {
+        "message": "Taiwan Traditional + idioms",
+        "description": "Preset label for Taiwan Traditional Chinese with idioms."
+    },
+    "preset_traditional_kyujitai": {
+        "message": "Traditional (Kyujitai)",
+        "description": "Preset label for traditional Kyujitai Japanese."
+    },
+    "preset_japanese_shinjitai": {
+        "message": "Japanese (Shinjitai)",
+        "description": "Preset label for modern Shinjitai Japanese."
     }
 }
