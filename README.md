@@ -52,6 +52,7 @@ OpenCC is a Safari extension project with iOS and macOS host apps.
 ## Notes
 
 - Extension resources are in `Shared (Extension)/Resources`.
+- You need to download opencc-full.js from [opencc-js](https://github.com/nk2028/opencc-js) and put in `Shared (Extension)/Resources`.
 - For shared settings reliability across app/extension, use matching App Group setup (see `WORKFLOW.md`).
 - If you add a new conversion preset, update the files listed in `WORKFLOW.md`.
 
