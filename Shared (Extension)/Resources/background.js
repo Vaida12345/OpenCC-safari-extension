@@ -2,7 +2,7 @@ const NATIVE_APP_IDENTIFIER = "Vaida.app.OpenCC.Extension";
 
 const DEFAULT_SETTINGS = Object.freeze({
     enabled: true,
-    config: "s2t"
+    config: "t2s"
 });
 
 const SUPPORTED_CONFIGS = new Set([
@@ -67,7 +67,8 @@ async function getEffectiveSettings() {
     }
 
     const local = await browser.storage.local.get("openccSettings");
-    return normalizeSettings(local.openccSettings);
+    const normalized = normalizeSettings(local.openccSettings);
+    return normalized;
 }
 
 /**
@@ -121,6 +122,18 @@ browser.runtime.onInstalled.addListener(async () => {
     const settings = await getEffectiveSettings();
     await persistSettings(settings);
 });
+
+browser.runtime.onStartup.addListener(() => {
+    getEffectiveSettings()
+        .catch(() => {
+            // Ignore startup bootstrap failures.
+        });
+});
+
+getEffectiveSettings()
+    .catch(() => {
+        // Ignore bootstrap failures.
+    });
 
 browser.runtime.onMessage.addListener((message) => {
     if (!message || typeof message !== "object") {

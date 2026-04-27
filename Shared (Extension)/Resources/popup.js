@@ -17,6 +17,8 @@ const OPENCC_PRESETS = [
     { value: "jp2t", inputValue: "japanese-shinjitai", inputLabel: "Japanese (Shinjitai)", outputLabel: "Traditional (Kyujitai)" }
 ];
 
+const DEFAULT_CONFIG = "t2s";
+
 const enabledToggle = document.getElementById("enabled-toggle");
 const inputSelect = document.getElementById("input-select");
 const outputSelect = document.getElementById("output-select");
@@ -94,7 +96,7 @@ function setModeStatus(config, suffix) {
         return;
     }
 
-    const modeText = `${preset.inputLabel} -> ${preset.outputLabel}`;
+    const modeText = `${preset.inputLabel} → ${preset.outputLabel}`;
     status.textContent = suffix ? `${modeText} • ${suffix}` : modeText;
 }
 
@@ -103,7 +105,7 @@ function setModeStatus(config, suffix) {
  * @param {{enabled: boolean, config: string}} settings OpenCC settings.
  */
 function applySettingsToUI(settings) {
-    const preset = getPreset(settings.config) ?? OPENCC_PRESETS[0];
+    const preset = getPreset(settings.config) ?? getPreset(DEFAULT_CONFIG) ?? OPENCC_PRESETS[0];
     enabledToggle.checked = Boolean(settings.enabled);
     inputSelect.value = preset.inputValue;
     renderOutputOptions(preset.inputValue, preset.value);
@@ -147,7 +149,7 @@ async function convertNow() {
  */
 async function initPopup() {
     renderInputOptions();
-    renderOutputOptions(inputSelect.value, OPENCC_PRESETS[0].value);
+    renderOutputOptions(inputSelect.value, DEFAULT_CONFIG);
 
     const { settings } = await browser.runtime.sendMessage({ type: "opencc.getSettings" });
     applySettingsToUI(settings);
@@ -161,7 +163,6 @@ async function initPopup() {
     convertNowButton.addEventListener("click", convertNow);
 }
 
-initPopup().catch((error) => {
-    console.error("Failed to initialize popup", error);
+initPopup().catch(() => {
     status.textContent = "Failed to load settings";
 });

@@ -1,6 +1,6 @@
 {
     "extension_name": {
-        "message": "OpenCC",
+        "message": "CC Converter",
         "description": "The display name for the extension."
     },
     "extension_description": {

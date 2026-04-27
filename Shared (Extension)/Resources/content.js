@@ -19,15 +19,44 @@ const CONFIG_TO_LOCALE = Object.freeze({
 
 const DEFAULT_SETTINGS = Object.freeze({
     enabled: true,
-    config: "s2t"
+    config: "t2s"
 });
 
 const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEXTAREA", "INPUT"]);
+const SETTINGS_SYNC_INTERVAL_MS = 3000;
 
 let currentSettings = { ...DEFAULT_SETTINGS };
 let activeConverter = null;
 let observer = null;
+let settingsSyncTimer = null;
 let isApplying = false;
+
+/**
+ * Starts observing DOM mutations for incremental conversion updates.
+ */
+function startObserving() {
+    if (!observer) {
+        return;
+    }
+
+    observer.observe(document.documentElement, {
+        subtree: true,
+        childList: true,
+        characterData: true,
+        characterDataOldValue: true
+    });
+}
+
+/**
+ * Temporarily pauses DOM observation while extension-originated updates run.
+ */
+function stopObserving() {
+    if (!observer) {
+        return;
+    }
+
+    observer.disconnect();
+}
 
 /**
  * Ensures settings received from extension background are safe.
@@ -94,7 +123,21 @@ function convertTextNode(textNode) {
         return;
     }
 
-    textNode.nodeValue = activeConverter(original);
+    const converted = activeConverter(original);
+    guardConvertedText(textNode, converted);
+}
+
+/**
+ * Avoids redundant node assignments that can generate unnecessary mutation churn.
+ * @param {Text} textNode Text node to update.
+ * @param {string} converted Converted text.
+ */
+function guardConvertedText(textNode, converted) {
+    if (converted === textNode.nodeValue) {
+        return;
+    }
+
+    textNode.nodeValue = converted;
 }
 
 /**
@@ -163,11 +206,60 @@ function applySettings(settings) {
     currentSettings = normalized;
     activeConverter = createConverter(normalized.config);
 
+    const hadObserver = Boolean(observer);
+    if (hadObserver) {
+        stopObserving();
+    }
+
     restoreDocument();
 
     if (normalized.enabled) {
         convertDocument();
     }
+
+    if (hadObserver) {
+        startObserving();
+    }
+}
+
+/**
+ * Compares two settings objects for semantic equality.
+ * @param {{enabled: boolean, config: string}} lhs Left settings.
+ * @param {{enabled: boolean, config: string}} rhs Right settings.
+ * @returns {boolean} True when both settings represent the same mode.
+ */
+function areSettingsEqual(lhs, rhs) {
+    return lhs.enabled === rhs.enabled && lhs.config === rhs.config;
+}
+
+/**
+ * Pulls latest settings from background/native and applies them when changed.
+ * @returns {Promise<void>}
+ */
+async function syncSettingsFromBackground() {
+    const { settings } = await browser.runtime.sendMessage({ type: "opencc.getSettings" });
+    const normalized = normalizeSettings(settings);
+
+    if (areSettingsEqual(normalized, currentSettings)) {
+        return;
+    }
+
+    applySettings(normalized);
+}
+
+/**
+ * Starts periodic settings synchronization so app-side changes propagate to tabs.
+ */
+function startSettingsSync() {
+    if (settingsSyncTimer !== null) {
+        return;
+    }
+
+    settingsSyncTimer = window.setInterval(() => {
+        syncSettingsFromBackground().catch(() => {
+            // Ignore transient background/native messaging failures.
+        });
+    }, SETTINGS_SYNC_INTERVAL_MS);
 }
 
 /**
@@ -187,6 +279,10 @@ function ensureObserver() {
             if (mutation.type === "characterData") {
                 const node = mutation.target;
                 if (!(node instanceof Text)) {
+                    return;
+                }
+
+                if (typeof node.__openccOriginal === "string" && mutation.oldValue === node.__openccOriginal) {
                     return;
                 }
 
@@ -219,20 +315,21 @@ function ensureObserver() {
         });
     });
 
-    observer.observe(document.documentElement, {
-        subtree: true,
-        childList: true,
-        characterData: true
-    });
+    startObserving();
 }
 
 /**
- * Bootstraps content script by requesting persisted settings.
+ * Bootstraps content script and starts ongoing settings synchronization.
  */
 async function initContentScript() {
-    const { settings } = await browser.runtime.sendMessage({ type: "opencc.getSettings" });
-    applySettings(settings);
+    try {
+        await syncSettingsFromBackground();
+    } catch {
+        applySettings(DEFAULT_SETTINGS);
+    }
+
     ensureObserver();
+    startSettingsSync();
 }
 
 browser.runtime.onMessage.addListener((message) => {
@@ -253,6 +350,6 @@ browser.runtime.onMessage.addListener((message) => {
     return undefined;
 });
 
-initContentScript().catch((error) => {
-    console.error("Failed to initialize OpenCC content conversion", error);
+initContentScript().catch(() => {
+    // Ignore initialization failures.
 });

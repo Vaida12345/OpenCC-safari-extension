@@ -7,89 +7,215 @@
 
 import SwiftUI
 
-
 struct OpenCCSettingsView: View {
     @ObservedObject var viewModel: OpenCCSettingsViewModel
-    
+    @Environment(\.openURL) private var openURL
+
     var body: some View {
-        TabView {
-            Tab {
-                VStack(alignment: .leading, spacing: 16) {
-                    Section {
-#if os(iOS)
-                        Text("You can turn on OpenCC’s Safari extension in Settings.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .padding(.bottom)
-#elseif os(macOS)
-                        Button {
-                            viewModel.openSafariPreferences()
-                        } label: {
-                            Label(viewModel.preferencesButtonTitle, systemImage: "safari")
-                                .labelStyle(.titleOnly)
-                        }
-                        .buttonStyle(.bordered)
+        VStack(spacing: 20) {
+            HStack(alignment: .top, spacing: 16) {
+                appIcon
+                    .frame(maxHeight: 80)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("CC Converter")
+                            .font(.largeTitle.weight(.bold))
+                            .fixedSize()
                         
-                        Text(viewModel.extensionMessage)
-                            .font(.footnote)
-                            .foregroundColor(.secondary)
-                            .padding(.bottom)
-#endif
-                    }
-                }
-            } label: {
-                Label("Extension", systemImage: "safari")
-            }
-            
-            Tab {
-                VStack(alignment: .leading, spacing: 16) {
-                    Form {
-                        Section {
-                            Toggle("Enable Conversion", isOn: Binding(
-                                get: { viewModel.enabled },
-                                set: { viewModel.updateEnabled($0) }
-                            ))
-                            
-                            Picker("Input Text", selection: Binding(
-                                get: { viewModel.selectedInput },
-                                set: { viewModel.updateInput($0) }
-                            )) {
-                                ForEach(viewModel.inputOptions, id: \.value) { input in
-                                    Text(input.label).tag(input.value)
-                                }
+                        Button {
+                            if let url = URL(string: "https://github.com/Vaida12345/OpenCC-safari-extension") {
+                                openURL(url)
                             }
-                            
-                            Picker("Output Text", selection: Binding(
-                                get: { viewModel.selectedConfig },
-                                set: { viewModel.updateOutput($0) }
-                            )) {
-                                ForEach(viewModel.outputOptions, id: \.value) { output in
-                                    Text(output.outputLabel).tag(output.value)
-                                }
-                            }
-                        } header: {
-                            Text("Conversion Settings")
+                        } label: {
+                            Label("Github", systemImage: "link")
+                                .font(.caption.weight(.semibold))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .foregroundStyle(.secondary)
+                                .background(.secondary.opacity(0.14), in: Capsule())
                         }
+                        .buttonStyle(.plain)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
                     }
-                    
-                    Text(viewModel.statusText)
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
+
+                    Text("Convert Traditional and Simplified Chinese directly in Safari with OpenCC.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(20)
-            } label: {
-                Label("Settings", systemImage: "gear")
             }
-        }
+            .padding(20)
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    Label("App Extension", systemImage: "safari")
+                        .font(.headline)
+
+                    Spacer(minLength: 0)
+
+                    Label(extensionStatusTitle, systemImage: extensionStatusSymbol)
+                        .font(.caption.weight(.semibold))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .foregroundStyle(extensionStatusTint)
+                        .background(extensionStatusTint.opacity(0.14), in: Capsule())
+                }
+
+                Text(extensionStatusMessage)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
 #if os(macOS)
-        .frame(width: 420, height: 280)
+                Button {
+                    viewModel.openSafariPreferences()
+                } label: {
+                    Label(viewModel.preferencesButtonTitle, systemImage: "gearshape")
+                }
+                .buttonStyle(.borderedProminent)
+#endif
+                
+                Label("You can change conversion configuration in the Safari extension popup.", systemImage: "info.circle")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(20)
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            
+            privacySection
+            creditsSection
+        }
+        .padding(24)
+        .frame(width: 480)
+    }
+
+    /// Displays privacy details for local-only conversion and stored data scope.
+    private var privacySection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Label("Privacy", systemImage: "hand.raised")
+                .font(.headline)
+
+            Text("All conversions run completely offline. OpenCC makes no internet connection.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Text("The app stores nothing except your conversion configurations.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(20)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    /// Displays attribution for open-source components used by the app.
+    private var creditsSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Label("Credits", systemImage: "person.2")
+                .font(.headline)
+
+            Text("Powered by [opencc-js](https://github.com/nk2028/opencc-js) by [nk2028](https://github.com/nk2028) and [OpenCC](https://github.com/byvoid/opencc) by [BYVoid](https://github.com/BYVoid).")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(20)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    /// Provides the GitHub repository URL displayed in settings.
+    private var githubRepositoryURL: URL? {
+        URL(string: "https://github.com")
+    }
+
+    @ViewBuilder
+    private var appIcon: some View {
+#if os(iOS)
+        if let image = UIImage(named: "Icon") {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+        } else {
+            Image(systemName: "character.book.closed")
+                .resizable()
+                .scaledToFit()
+                .padding(16)
+                .foregroundStyle(.secondary)
+        }
+#elseif os(macOS)
+        if let image = NSImage(named: "Icon") {
+            Image(nsImage: image)
+                .resizable()
+                .scaledToFit()
+        } else {
+            Image(nsImage: NSApp.applicationIconImage)
+                .resizable()
+                .scaledToFit()
+        }
 #endif
     }
+
+#if os(macOS)
+    private var extensionStatusTitle: String {
+        switch viewModel.extensionState {
+        case .on:
+            return "Enabled"
+        case .off:
+            return "Disabled"
+        case .unknown:
+            return "Unknown"
+        }
+    }
+
+    private var extensionStatusSymbol: String {
+        switch viewModel.extensionState {
+        case .on:
+            return "checkmark.circle.fill"
+        case .off:
+            return "xmark.circle.fill"
+        case .unknown:
+            return "questionmark.circle.fill"
+        }
+    }
+
+    private var extensionStatusTint: Color {
+        switch viewModel.extensionState {
+        case .on:
+            return .green
+        case .off:
+            return .orange
+        case .unknown:
+            return .secondary
+        }
+    }
+
+    private var extensionStatusMessage: String {
+        viewModel.extensionMessage
+    }
+#else
+    private var extensionStatusTitle: String { "Unavailable" }
+
+    private var extensionStatusSymbol: String { "minus.circle.fill" }
+
+    private var extensionStatusTint: Color { .secondary }
+
+    private var extensionStatusMessage: String {
+        "You can manage CC Converter in Settings > Safari > Extensions."
+    }
+#endif
 }
 
-
 #Preview {
-    OpenCCSettingsView(
-        viewModel: OpenCCSettingsViewModel(initialSettings: .init(enabled: true, config: defaultOpenCCConfig)) { _ in }
-    )
+    OpenCCSettingsView(viewModel: .init())
 }

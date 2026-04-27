@@ -7,12 +7,11 @@
 
 import Foundation
 import SafariServices
-import os.log
 
 private let appGroupSuiteName = "group.Vaida.app.OpenCC"
 private let openCCEnabledKey = "opencc.enabled"
 private let openCCConfigKey = "opencc.config"
-private let defaultOpenCCConfig = "s2t"
+private let defaultOpenCCConfig = "t2s"
 private let supportedOpenCCConfigs: Set<String> = [
     "s2t", "t2s", "s2tw", "tw2s", "s2hk", "hk2s", "s2twp", "tw2sp",
     "t2tw", "tw2t", "t2twp", "tw2tp", "t2hk", "hk2t", "t2jp", "jp2t"
@@ -76,15 +75,9 @@ class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
         return ["ok": false, "settings": loadSettings()]
     }
 
+    /// Handles an incoming native message from the Safari Web Extension runtime.
     func beginRequest(with context: NSExtensionContext) {
         let request = context.inputItems.first as? NSExtensionItem
-
-        let profile: UUID?
-        if #available(iOS 17.0, macOS 14.0, *) {
-            profile = request?.userInfo?[SFExtensionProfileKey] as? UUID
-        } else {
-            profile = request?.userInfo?["profile"] as? UUID
-        }
 
         let message: Any?
         if #available(iOS 15.0, macOS 11.0, *) {
@@ -92,13 +85,6 @@ class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
         } else {
             message = request?.userInfo?["message"]
         }
-
-        os_log(
-            .default,
-            "Received native message: %@ (profile: %@)",
-            String(describing: message),
-            profile?.uuidString ?? "none"
-        )
 
         let responsePayload = handleNativeMessage(message)
         let response = NSExtensionItem()

@@ -15,16 +15,8 @@ struct OpenCCApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 #endif
     
-    @StateObject private var viewModel: OpenCCSettingsViewModel
+    @StateObject private var viewModel = OpenCCSettingsViewModel()
     
-    /// Creates the SwiftUI app and wires persistent settings storage.
-    init() {
-        _viewModel = StateObject(
-            wrappedValue: OpenCCSettingsViewModel(initialSettings: OpenCCSettingsStore.load()) {
-                OpenCCSettingsStore.save($0)
-            }
-        )
-    }
     
     var body: some Scene {
         WindowGroup {
