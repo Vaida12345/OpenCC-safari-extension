@@ -65,14 +65,16 @@ struct OpenCCSettingsView: View {
                     Label("Safari Extension", systemImage: "safari")
                         .font(.headline)
 
+#if os(macOS)
                     Spacer(minLength: 0)
-
+                    
                     Label(extensionStatusTitle, systemImage: extensionStatusSymbol)
                         .font(.caption.weight(.semibold))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .foregroundStyle(extensionStatusTint)
                         .background(extensionStatusTint.opacity(0.14), in: Capsule())
+#endif
                 }
 
                 Text(extensionStatusMessage)

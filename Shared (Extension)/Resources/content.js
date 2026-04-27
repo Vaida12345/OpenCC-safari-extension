@@ -23,20 +23,34 @@ const DEFAULT_SETTINGS = Object.freeze({
 });
 
 const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEXTAREA", "INPUT"]);
-const SETTINGS_SYNC_INTERVAL_MS = 3000;
 
 let currentSettings = { ...DEFAULT_SETTINGS };
 let hasAppliedSettings = false;
 let activeConverter = null;
 let observer = null;
-let settingsSyncTimer = null;
 let isApplying = false;
+let isAwaitingDocumentElement = false;
+
+const SELF_MUTATION_FLAG = "__openccSelfMutation";
 
 /**
  * Starts observing DOM mutations for incremental conversion updates.
  */
 function startObserving() {
     if (!observer) {
+        return;
+    }
+
+    if (!document.documentElement) {
+        if (isAwaitingDocumentElement) {
+            return;
+        }
+
+        isAwaitingDocumentElement = true;
+        document.addEventListener("DOMContentLoaded", () => {
+            isAwaitingDocumentElement = false;
+            startObserving();
+        }, { once: true });
         return;
     }
 
@@ -89,25 +103,20 @@ function getOriginalText(textNode) {
 
 /**
  * Returns true when a text node should be excluded from conversion.
+ *
+ * Editable regions are ignored to avoid mutating user input while typing.
  * @param {Text} textNode Node being evaluated.
  * @returns {boolean} Whether this node must be skipped.
  */
 function shouldSkipTextNode(textNode) {
     const parent = textNode.parentElement;
-
     if (!parent) {
         return true;
     }
 
-    if (parent.closest(".ignore-opencc")) {
-        return true;
-    }
-
-    if (SKIP_TAGS.has(parent.tagName)) {
-        return true;
-    }
-
-    return false;
+    return parent.isContentEditable
+        || Boolean(parent.closest(".ignore-opencc"))
+        || SKIP_TAGS.has(parent.tagName);
 }
 
 /**
@@ -129,7 +138,7 @@ function convertTextNode(textNode) {
 }
 
 /**
- * Avoids redundant node assignments that can generate unnecessary mutation churn.
+ * Applies converted text only when needed and marks extension-originated writes.
  * @param {Text} textNode Text node to update.
  * @param {string} converted Converted text.
  */
@@ -138,7 +147,21 @@ function guardConvertedText(textNode, converted) {
         return;
     }
 
+    textNode[SELF_MUTATION_FLAG] = true;
     textNode.nodeValue = converted;
+}
+
+/**
+ * Captures latest original text and converts immediately when enabled.
+ * @param {Text} textNode Text node to snapshot and optionally convert.
+ */
+function captureAndMaybeConvertTextNode(textNode) {
+    textNode.__openccOriginal = textNode.nodeValue ?? "";
+    if (!currentSettings.enabled) {
+        return;
+    }
+
+    convertTextNode(textNode);
 }
 
 /**
@@ -146,9 +169,12 @@ function guardConvertedText(textNode, converted) {
  * @param {Text} textNode Text node to restore.
  */
 function restoreTextNode(textNode) {
-    if (typeof textNode.__openccOriginal === "string") {
-        textNode.nodeValue = textNode.__openccOriginal;
+    if (typeof textNode.__openccOriginal !== "string") {
+        return;
     }
+
+    textNode[SELF_MUTATION_FLAG] = true;
+    textNode.nodeValue = textNode.__openccOriginal;
 }
 
 /**
@@ -170,6 +196,10 @@ function walkTextNodes(root, callback) {
  * Restores the complete document to original text values.
  */
 function restoreDocument() {
+    if (!document.documentElement) {
+        return;
+    }
+
     isApplying = true;
     walkTextNodes(document.documentElement, restoreTextNode);
     isApplying = false;
@@ -179,7 +209,7 @@ function restoreDocument() {
  * Converts the complete document using the current converter.
  */
 function convertDocument() {
-    if (!activeConverter) {
+    if (!activeConverter || !document.documentElement) {
         return;
     }
 
@@ -191,22 +221,28 @@ function convertDocument() {
 /**
  * Builds a converter from an OpenCC config code.
  * @param {string} config OpenCC config key.
- * @returns {(text: string) => string} Converter function.
+ * @returns {((text: string) => string) | null} Converter function when available.
  */
 function createConverter(config) {
+    if (typeof OpenCC === "undefined" || typeof OpenCC.Converter !== "function") {
+        return null;
+    }
+
     const locale = CONFIG_TO_LOCALE[config] ?? CONFIG_TO_LOCALE[DEFAULT_SETTINGS.config];
     return OpenCC.Converter({ from: locale.from, to: locale.to });
 }
 
 /**
  * Applies settings by restoring text first, then converting if enabled.
+ *
+ * Converter initialization is lazy and only occurs when conversion is enabled.
  * @param {{enabled: boolean, config: string}} settings New settings.
  */
 function applySettings(settings) {
     const normalized = normalizeSettings(settings);
     currentSettings = normalized;
     hasAppliedSettings = true;
-    activeConverter = createConverter(normalized.config);
+    activeConverter = normalized.enabled ? createConverter(normalized.config) : null;
 
     const hadObserver = Boolean(observer);
     if (hadObserver) {
@@ -253,21 +289,6 @@ async function syncSettingsFromBackground() {
 }
 
 /**
- * Starts periodic settings synchronization so app-side changes propagate to tabs.
- */
-function startSettingsSync() {
-    if (settingsSyncTimer !== null) {
-        return;
-    }
-
-    settingsSyncTimer = window.setInterval(() => {
-        syncSettingsFromBackground().catch(() => {
-            // Ignore transient background/native messaging failures.
-        });
-    }, SETTINGS_SYNC_INTERVAL_MS);
-}
-
-/**
  * Handles dynamic DOM changes while preserving original text snapshots.
  */
 function ensureObserver() {
@@ -287,34 +308,23 @@ function ensureObserver() {
                     return;
                 }
 
-                if (typeof node.__openccOriginal === "string" && mutation.oldValue === node.__openccOriginal) {
+                if (node[SELF_MUTATION_FLAG]) {
+                    node[SELF_MUTATION_FLAG] = false;
                     return;
                 }
 
-                node.__openccOriginal = node.nodeValue ?? "";
-                if (currentSettings.enabled) {
-                    convertTextNode(node);
-                }
+                captureAndMaybeConvertTextNode(node);
                 return;
             }
 
             mutation.addedNodes.forEach((addedNode) => {
                 if (addedNode.nodeType === Node.TEXT_NODE) {
-                    const textNode = addedNode;
-                    textNode.__openccOriginal = textNode.nodeValue ?? "";
-                    if (currentSettings.enabled) {
-                        convertTextNode(textNode);
-                    }
+                    captureAndMaybeConvertTextNode(addedNode);
                     return;
                 }
 
                 if (addedNode.nodeType === Node.ELEMENT_NODE) {
-                    walkTextNodes(addedNode, (textNode) => {
-                        textNode.__openccOriginal = textNode.nodeValue ?? "";
-                        if (currentSettings.enabled) {
-                            convertTextNode(textNode);
-                        }
-                    });
+                    walkTextNodes(addedNode, captureAndMaybeConvertTextNode);
                 }
             });
         });
@@ -324,7 +334,7 @@ function ensureObserver() {
 }
 
 /**
- * Bootstraps content script and starts ongoing settings synchronization.
+ * Bootstraps content script with initial settings and mutation observation.
  */
 async function initContentScript() {
     try {
@@ -334,7 +344,6 @@ async function initContentScript() {
     }
 
     ensureObserver();
-    startSettingsSync();
 }
 
 browser.runtime.onMessage.addListener((message) => {
