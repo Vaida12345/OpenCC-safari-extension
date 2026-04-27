@@ -129,7 +129,7 @@ const OPENCC_PRESETS = [
     }
 ];
 
-const DEFAULT_CONFIG = "t2s";
+const DEFAULT_CONFIG = "tw2sp";
 
 const enabledToggle = document.getElementById("enabled-toggle");
 const inputSelect = document.getElementById("input-select");

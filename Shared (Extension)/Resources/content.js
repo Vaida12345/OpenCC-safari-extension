@@ -26,6 +26,7 @@ const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEXTAREA", "INPUT"]);
 const SETTINGS_SYNC_INTERVAL_MS = 3000;
 
 let currentSettings = { ...DEFAULT_SETTINGS };
+let hasAppliedSettings = false;
 let activeConverter = null;
 let observer = null;
 let settingsSyncTimer = null;
@@ -204,6 +205,7 @@ function createConverter(config) {
 function applySettings(settings) {
     const normalized = normalizeSettings(settings);
     currentSettings = normalized;
+    hasAppliedSettings = true;
     activeConverter = createConverter(normalized.config);
 
     const hadObserver = Boolean(observer);
@@ -233,14 +235,17 @@ function areSettingsEqual(lhs, rhs) {
 }
 
 /**
- * Pulls latest settings from background/native and applies them when changed.
+ * Pulls latest settings from background/native and applies them.
+ *
+ * The first sync always applies settings so the converter is initialized,
+ * even when the stored values match in-memory defaults.
  * @returns {Promise<void>}
  */
 async function syncSettingsFromBackground() {
     const { settings } = await browser.runtime.sendMessage({ type: "opencc.getSettings" });
     const normalized = normalizeSettings(settings);
 
-    if (areSettingsEqual(normalized, currentSettings)) {
+    if (hasAppliedSettings && areSettingsEqual(normalized, currentSettings)) {
         return;
     }
 
