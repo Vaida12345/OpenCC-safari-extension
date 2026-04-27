@@ -27,6 +27,8 @@ struct OpenCCApp: App {
                 }
 #endif
         }
+#if os(macOS)
         .windowResizability(.contentSize)
+#endif
     }
 }

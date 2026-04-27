@@ -20,7 +20,11 @@ struct OpenCCSettingsView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Text("CC Converter")
+#if os(macOS)
                             .font(.largeTitle.weight(.bold))
+#else
+                            .font(.body.weight(.bold))
+#endif
                             .fixedSize()
                         
                         Button {
@@ -90,7 +94,9 @@ struct OpenCCSettingsView: View {
             creditsSection
         }
         .padding(24)
+        #if os(macOS)
         .frame(width: 480)
+        #endif
     }
 
     /// Displays privacy details for local-only conversion and stored data scope.

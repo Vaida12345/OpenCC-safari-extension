@@ -56,6 +56,7 @@
 /* Begin PBXFileReference section */
 		B46825042F9F7B630077FCF2 /* WORKFLOW.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = WORKFLOW.md; sourceTree = "<group>"; };
 		B46832282F9F7DBB000C10FB /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
+		B46832372F9F97A4000C10FB /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		B4D2C8492F9F745400CC1C7A /* OpenCC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenCC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4D2C85B2F9F745400CC1C7A /* OpenCC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenCC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4D2C8662F9F745400CC1C7A /* OpenCC Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "OpenCC Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -67,6 +68,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App.swift,
+				AppIcon.icon,
 				Assets.xcassets,
 				SettingsView.swift,
 				ViewModel.swift,
@@ -91,6 +93,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App.swift,
+				AppIcon.icon,
 				Assets.xcassets,
 				SettingsView.swift,
 				ViewModel.swift,
@@ -236,6 +239,7 @@
 				B4D2C84A2F9F745400CC1C7A /* Products */,
 				B46825042F9F7B630077FCF2 /* WORKFLOW.md */,
 				B46832282F9F7DBB000C10FB /* AGENTS.md */,
+				B46832372F9F97A4000C10FB /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -721,6 +725,7 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = OpenCC;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -770,6 +775,7 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = OpenCC;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LD_RUNPATH_SEARCH_PATHS = (
