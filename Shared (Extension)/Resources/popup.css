@@ -1,15 +1,135 @@
 :root {
     color-scheme: light dark;
+    --space-1: 8px;
+    --space-2: 12px;
+    --space-3: 14px;
+    --space-4: 16px;
+    --surface: color-mix(in srgb, Canvas 92%, transparent);
+    --surface-border: color-mix(in srgb, currentColor 16%, transparent);
+    --focus-ring: color-mix(in srgb, AccentColor 50%, transparent);
+}
+
+* {
+    box-sizing: border-box;
 }
 
 body {
-    width: 100px;
-    padding: 10px;
-
-    font-family: system-ui;
-    text-align: center;
+    margin: 0;
+    width: 340px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+    background: Canvas;
 }
 
-@media (prefers-color-scheme: dark) {
-    /* Dark Mode styles go here. */
+.popup-shell {
+    display: grid;
+    padding: var(--space-4);
+}
+
+.settings-card {
+    display: grid;
+    gap: var(--space-3);
+    padding: 0;
+}
+
+.toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    font-size: 13px;
+}
+
+.toggle {
+    position: relative;
+    display: inline-flex;
+    width: 34px;
+    height: 20px;
+}
+
+.toggle input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+}
+
+.toggle .track {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, currentColor 24%, transparent);
+    transition: background-color 150ms ease;
+}
+
+.toggle .track::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    background: Canvas;
+    box-shadow: 0 2px 8px color-mix(in srgb, currentColor 22%, transparent);
+    transition: transform 150ms ease;
+}
+
+.toggle input:checked + .track {
+    background: AccentColor;
+}
+
+.toggle input:checked + .track::after {
+    transform: translateX(14px);
+}
+
+.field {
+    display: grid;
+    gap: var(--space-1);
+    font-size: 13px;
+}
+
+.field-grid {
+    display: grid;
+    gap: var(--space-2);
+    grid-template-columns: 1fr;
+}
+
+select,
+button,
+input {
+    font: inherit;
+}
+
+select,
+button {
+    min-height: 27px;
+}
+
+select {
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+    background: color-mix(in srgb, Canvas 92%, transparent);
+    padding: 0 10px;
+}
+
+button {
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+    background: color-mix(in srgb, Canvas 80%, AccentColor 10%);
+    font-weight: 500;
+    font-size: 13px;
+}
+
+select:focus-visible,
+button:focus-visible,
+.toggle input:focus-visible + .track {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+#status {
+    margin: 0;
+    min-height: 18px;
+    font-size: 12px;
+    opacity: 0.8;
 }

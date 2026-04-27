@@ -2,12 +2,16 @@
     -webkit-user-select: none;
     -webkit-user-drag: none;
     cursor: default;
+    box-sizing: border-box;
 }
 
 :root {
     color-scheme: light dark;
-
-    --spacing: 20px;
+    --spacing: 18px;
+    --surface: color-mix(in srgb, Canvas 90%, transparent);
+    --surface-border: color-mix(in srgb, currentColor 16%, transparent);
+    --notice-bg: color-mix(in srgb, AccentColor 10%, Canvas);
+    --focus-ring: color-mix(in srgb, AccentColor 50%, transparent);
 }
 
 html {
@@ -16,16 +20,161 @@ html {
 
 body {
     display: flex;
-    align-items: center;
     justify-content: center;
-    flex-direction: column;
-
-    gap: var(--spacing);
-    margin: 0 calc(var(--spacing) * 2);
-    height: 100%;
-
+    margin: 0;
+    min-height: 100%;
+    padding: 24px;
+    background:
+        radial-gradient(circle at 15% 0%, color-mix(in srgb, AccentColor 12%, transparent), transparent 40%),
+        radial-gradient(circle at 100% 90%, color-mix(in srgb, AccentColor 8%, transparent), transparent 30%),
+        Canvas;
     font: -apple-system-short-body;
-    text-align: center;
+}
+
+.app-shell {
+    width: min(640px, 100%);
+    display: grid;
+    gap: var(--spacing);
+}
+
+.hero {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.hero img {
+    border-radius: 16px;
+    box-shadow: 0 8px 30px color-mix(in srgb, AccentColor 20%, transparent);
+}
+
+.hero h1 {
+    margin: 0;
+    font-size: 1.45rem;
+    font-weight: 650;
+}
+
+.hero p {
+    margin: 4px 0 0;
+    opacity: 0.8;
+}
+
+.notice {
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--notice-bg);
+    border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.settings-panel h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 640;
+}
+
+.settings-panel {
+    padding: 18px;
+    border: 1px solid var(--surface-border);
+    border-radius: 18px;
+    display: grid;
+    gap: 16px;
+    background: var(--surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 14px 40px color-mix(in srgb, currentColor 8%, transparent);
+}
+
+.toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.toggle {
+    position: relative;
+    display: inline-flex;
+    width: 50px;
+    height: 30px;
+}
+
+.toggle input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+}
+
+.toggle .track {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, currentColor 24%, transparent);
+    transition: background-color 150ms ease;
+}
+
+.toggle .track::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    background: Canvas;
+    box-shadow: 0 2px 8px color-mix(in srgb, currentColor 20%, transparent);
+    transition: transform 150ms ease;
+}
+
+.toggle input:checked + .track {
+    background: AccentColor;
+}
+
+.toggle input:checked + .track::after {
+    transform: translateX(20px);
+}
+
+.field {
+    display: grid;
+    gap: 8px;
+}
+
+.field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.field span {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.field select,
+.field input {
+    font: inherit;
+}
+
+.field select {
+    width: 100%;
+    min-height: 36px;
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+    background: color-mix(in srgb, Canvas 92%, transparent);
+    padding: 0 10px;
+}
+
+.field select:focus-visible,
+.toggle input:focus-visible + .track {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+.status {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.8;
 }
 
 body:not(.platform-mac, .platform-ios) :is(.platform-mac, .platform-ios) {
@@ -37,10 +186,6 @@ body.platform-ios .platform-mac {
 }
 
 body.platform-mac .platform-ios {
-    display: none;
-}
-
-body.platform-ios .platform-mac {
     display: none;
 }
 
@@ -57,5 +202,20 @@ body.state-off :is(.state-on, .state-unknown) {
 }
 
 button {
-    font-size: 1em;
+    font: inherit;
+    font-weight: 600;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+    padding: 10px 14px;
+    background: color-mix(in srgb, Canvas 80%, AccentColor 10%);
+}
+
+@media (max-width: 620px) {
+    body {
+        padding: 16px;
+    }
+
+    .field-grid {
+        grid-template-columns: 1fr;
+    }
 }

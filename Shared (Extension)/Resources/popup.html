@@ -2,10 +2,36 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="popup.css">
     <script type="module" src="popup.js"></script>
 </head>
 <body>
-    <strong>Hello World!</strong>
+    <main class="popup-shell">
+        <section class="settings-card">
+            <label class="toggle-row" for="enabled-toggle">
+                <span>Enable Conversion</span>
+                <span class="toggle">
+                    <input id="enabled-toggle" type="checkbox" role="switch">
+                    <span class="track" aria-hidden="true"></span>
+                </span>
+            </label>
+
+            <div class="field-grid">
+                <label class="field" for="input-select">
+                    <span>Input Text</span>
+                    <select id="input-select"></select>
+                </label>
+
+                <label class="field" for="output-select">
+                    <span>Output Text</span>
+                    <select id="output-select"></select>
+                </label>
+            </div>
+
+            <button id="convert-now" type="button">Convert This Page Now</button>
+            <p id="status" role="status" aria-live="polite"></p>
+        </section>
+    </main>
 </body>
 </html>

@@ -54,6 +54,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B46825042F9F7B630077FCF2 /* WORKFLOW.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = WORKFLOW.md; sourceTree = "<group>"; };
+		B46832282F9F7DBB000C10FB /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
 		B4D2C8492F9F745400CC1C7A /* OpenCC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenCC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4D2C85B2F9F745400CC1C7A /* OpenCC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenCC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4D2C8662F9F745400CC1C7A /* OpenCC Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "OpenCC Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -65,11 +67,14 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				"/Localized: Resources/Main.html",
+				App.swift,
 				Assets.xcassets,
 				Resources/Icon.png,
 				Resources/Script.js,
 				Resources/Style.css,
+				SettingsView.swift,
 				ViewController.swift,
+				ViewModel.swift,
 			);
 			target = B4D2C8482F9F745400CC1C7A /* OpenCC (iOS) */;
 		};
@@ -91,11 +96,14 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				"/Localized: Resources/Main.html",
+				App.swift,
 				Assets.xcassets,
 				Resources/Icon.png,
 				Resources/Script.js,
 				Resources/Style.css,
+				SettingsView.swift,
 				ViewController.swift,
+				ViewModel.swift,
 			);
 			target = B4D2C85A2F9F745400CC1C7A /* OpenCC (macOS) */;
 		};
@@ -114,6 +122,7 @@
 				Resources/content.js,
 				Resources/images,
 				Resources/manifest.json,
+				"Resources/opencc-full.js",
 				Resources/popup.css,
 				Resources/popup.html,
 				Resources/popup.js,
@@ -129,6 +138,7 @@
 				Resources/content.js,
 				Resources/images,
 				Resources/manifest.json,
+				"Resources/opencc-full.js",
 				Resources/popup.css,
 				Resources/popup.html,
 				Resources/popup.js,
@@ -234,6 +244,8 @@
 				B4D2C86A2F9F745400CC1C7A /* iOS (Extension) */,
 				B4D2C8742F9F745400CC1C7A /* macOS (Extension) */,
 				B4D2C84A2F9F745400CC1C7A /* Products */,
+				B46825042F9F7B630077FCF2 /* WORKFLOW.md */,
+				B46832282F9F7DBB000C10FB /* AGENTS.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -635,7 +647,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MACOSX_DEPLOYMENT_TARGET = 15;
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -671,7 +683,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MACOSX_DEPLOYMENT_TARGET = 15;
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -709,7 +721,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MACOSX_DEPLOYMENT_TARGET = 15;
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -750,7 +762,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MACOSX_DEPLOYMENT_TARGET = 15;
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"-framework",

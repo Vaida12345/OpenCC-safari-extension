@@ -7,15 +7,13 @@
 
 import Cocoa
 
-@main
 class AppDelegate: NSObject, NSApplicationDelegate {
-
+    /// Handles post-launch setup for the SwiftUI app lifecycle.
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Override point for customization after application launch.
     }
 
+    /// Closes the app when its last window is closed.
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
-        return true
+        true
     }
-
 }
