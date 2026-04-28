@@ -140,22 +140,8 @@ select:focus-visible,
     opacity: 0.8;
 }
 
+/** macOS */
 @media (max-width: 430px) {
-    .popup-shell {
-        padding:
-            calc(10px + env(safe-area-inset-top, 0px))
-            calc(10px + env(safe-area-inset-right, 0px))
-            calc(12px + env(safe-area-inset-bottom, 0px))
-            calc(10px + env(safe-area-inset-left, 0px));
-    }
-
-    .settings-card {
-        padding: 12px;
-        border-radius: 12px;
-        border: 1px solid rgba(120, 120, 128, 0.22);
-        background: var(--surface);
-    }
-
     .toggle-row,
     .field {
         font-size: 12px;
