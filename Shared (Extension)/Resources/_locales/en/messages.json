@@ -19,6 +19,10 @@
         "message": "Output Text",
         "description": "Label for the target language select control."
     },
+    "popup_override_font": {
+        "message": "Override Region Font",
+        "description": "Toggle label to replace source-region fonts with destination-region system fonts when text changes."
+    },
     "popup_convert_now": {
         "message": "Convert This Page Now",
         "description": "Button text to immediately convert the active page."

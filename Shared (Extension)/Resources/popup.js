@@ -130,10 +130,12 @@ const OPENCC_PRESETS = [
 ];
 
 const DEFAULT_CONFIG = "tw2sp";
+const DEFAULT_FONT_OVERRIDE = false;
 
 const enabledToggle = document.getElementById("enabled-toggle");
 const inputSelect = document.getElementById("input-select");
 const outputSelect = document.getElementById("output-select");
+const fontOverrideToggle = document.getElementById("font-override-toggle");
 const convertNowButton = document.getElementById("convert-now");
 const status = document.getElementById("status");
 
@@ -260,11 +262,12 @@ function setModeStatus(config, suffix) {
 
 /**
  * Updates popup widgets to match current settings.
- * @param {{enabled: boolean, config: string}} settings OpenCC settings.
+ * @param {{enabled: boolean, config: string, fontOverride?: boolean}} settings OpenCC settings.
  */
 function applySettingsToUI(settings) {
     const preset = getPreset(settings.config) ?? getPreset(DEFAULT_CONFIG) ?? OPENCC_PRESETS[0];
     enabledToggle.checked = Boolean(settings.enabled);
+    fontOverrideToggle.checked = Boolean(settings.fontOverride ?? DEFAULT_FONT_OVERRIDE);
     inputSelect.value = preset.inputValue;
     renderOutputOptions(preset.inputValue, preset.value);
     setModeStatus(outputSelect.value);
@@ -272,12 +275,13 @@ function applySettingsToUI(settings) {
 
 /**
  * Reads current form values into settings payload.
- * @returns {{enabled: boolean, config: string}} Form settings.
+ * @returns {{enabled: boolean, config: string, fontOverride: boolean}} Form settings.
  */
 function readSettingsFromUI() {
     return {
         enabled: enabledToggle.checked,
-        config: outputSelect.value
+        config: outputSelect.value,
+        fontOverride: fontOverrideToggle.checked
     };
 }
 
@@ -317,6 +321,7 @@ async function initPopup() {
     applySettingsToUI(settings);
 
     enabledToggle.addEventListener("change", saveSettings);
+    fontOverrideToggle.addEventListener("change", saveSettings);
     inputSelect.addEventListener("change", () => {
         renderOutputOptions(inputSelect.value, outputSelect.value);
         saveSettings();

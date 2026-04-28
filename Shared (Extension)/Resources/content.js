@@ -19,7 +19,8 @@ const CONFIG_TO_LOCALE = Object.freeze({
 
 const DEFAULT_SETTINGS = Object.freeze({
     enabled: true,
-    config: "t2s"
+    config: "t2s",
+    fontOverride: false
 });
 
 const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEXTAREA", "INPUT"]);
@@ -32,6 +33,60 @@ let isApplying = false;
 let isAwaitingDocumentElement = false;
 
 const SELF_MUTATION_FLAG = "__openccSelfMutation";
+const ORIGINAL_FONT_FAMILY_FLAG = "__openccOriginalFontFamily";
+
+const OVERRIDDEN_FONT_ELEMENTS = new Set();
+
+const LOCALE_FONT_PROFILE = Object.freeze({
+    cn: {
+        regionToken: "SC",
+        scriptToken: "Hans",
+        fallbackSans: "PingFang SC",
+        fallbackSerif: "Songti SC",
+        fallbackKai: "Kaiti SC",
+        fallbackMono: "SF Mono"
+    },
+    t: {
+        regionToken: "TC",
+        scriptToken: "Hant",
+        fallbackSans: "PingFang TC",
+        fallbackSerif: "Songti TC",
+        fallbackKai: "Kaiti TC",
+        fallbackMono: "SF Mono"
+    },
+    tw: {
+        regionToken: "TC",
+        scriptToken: "Hant",
+        fallbackSans: "PingFang TC",
+        fallbackSerif: "Songti TC",
+        fallbackKai: "Kaiti TC",
+        fallbackMono: "SF Mono"
+    },
+    twp: {
+        regionToken: "TC",
+        scriptToken: "Hant",
+        fallbackSans: "PingFang TC",
+        fallbackSerif: "Songti TC",
+        fallbackKai: "Kaiti TC",
+        fallbackMono: "SF Mono"
+    },
+    hk: {
+        regionToken: "HK",
+        scriptToken: "Hant",
+        fallbackSans: "PingFang HK",
+        fallbackSerif: "Songti TC",
+        fallbackKai: "Kaiti TC",
+        fallbackMono: "SF Mono"
+    },
+    jp: {
+        regionToken: "JP",
+        scriptToken: "Jpan",
+        fallbackSans: "Hiragino Sans",
+        fallbackSerif: "Hiragino Mincho ProN",
+        fallbackKai: "Klee One",
+        fallbackMono: "SF Mono"
+    }
+});
 
 /**
  * Starts observing DOM mutations for incremental conversion updates.
@@ -76,7 +131,7 @@ function stopObserving() {
 /**
  * Ensures settings received from extension background are safe.
  * @param {unknown} rawSettings Incoming settings.
- * @returns {{enabled: boolean, config: string}} Normalized settings.
+ * @returns {{enabled: boolean, config: string, fontOverride: boolean}} Normalized settings.
  */
 function normalizeSettings(rawSettings) {
     const candidate = rawSettings && typeof rawSettings === "object" ? rawSettings : {};
@@ -84,8 +139,11 @@ function normalizeSettings(rawSettings) {
         ? candidate.config
         : DEFAULT_SETTINGS.config;
     const enabled = typeof candidate.enabled === "boolean" ? candidate.enabled : DEFAULT_SETTINGS.enabled;
+    const fontOverride = typeof candidate.fontOverride === "boolean"
+        ? candidate.fontOverride
+        : DEFAULT_SETTINGS.fontOverride;
 
-    return { enabled, config };
+    return { enabled, config, fontOverride };
 }
 
 /**
@@ -120,6 +178,149 @@ function shouldSkipTextNode(textNode) {
 }
 
 /**
+ * Escapes regular-expression metacharacters in a literal string.
+ * @param {string} value Source string.
+ * @returns {string} Escaped string for regex construction.
+ */
+function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Determines whether a font-family appears region-specific for the source locale.
+ * @param {string} fontFamily Computed font-family string.
+ * @param {string} fromLocale Source locale key.
+ * @returns {boolean} True when the font stack appears locale-specific.
+ */
+function isSourceNativeFont(fontFamily, fromLocale) {
+    const profile = LOCALE_FONT_PROFILE[fromLocale];
+    if (!profile) {
+        return false;
+    }
+
+    const sample = fontFamily.toLowerCase();
+    const regionPattern = new RegExp(`\\b${escapeRegExp(profile.regionToken)}\\b`, "i");
+    const scriptPattern = new RegExp(`\\b${escapeRegExp(profile.scriptToken)}\\b`, "i");
+
+    return regionPattern.test(fontFamily)
+        || scriptPattern.test(fontFamily)
+        || sample.includes("traditional")
+        || sample.includes("simplified")
+        || sample.includes("hant")
+        || sample.includes("hans");
+}
+
+/**
+ * Replaces locale tokens in a font-family list.
+ * @param {string} fontFamily Computed font-family string.
+ * @param {string} fromLocale Source locale key.
+ * @param {string} toLocale Destination locale key.
+ * @returns {string} Remapped font-family string.
+ */
+function remapFontFamily(fontFamily, fromLocale, toLocale) {
+    const fromProfile = LOCALE_FONT_PROFILE[fromLocale];
+    const toProfile = LOCALE_FONT_PROFILE[toLocale];
+    if (!fromProfile || !toProfile) {
+        return fontFamily;
+    }
+
+    let remapped = fontFamily;
+    const localeTokenPattern = new RegExp(`\\b${escapeRegExp(fromProfile.regionToken)}\\b`, "gi");
+    const scriptTokenPattern = new RegExp(`\\b${escapeRegExp(fromProfile.scriptToken)}\\b`, "gi");
+
+    remapped = remapped.replace(localeTokenPattern, toProfile.regionToken);
+    remapped = remapped.replace(scriptTokenPattern, toProfile.scriptToken);
+
+    if (fromProfile.scriptToken === "Hans") {
+        remapped = remapped.replace(/\bSimplified\b/gi, "Traditional");
+    }
+
+    if (fromProfile.scriptToken === "Hant") {
+        remapped = remapped.replace(/\bTraditional\b/gi, "Simplified");
+    }
+
+    return remapped;
+}
+
+/**
+ * Chooses a destination system fallback font using the original font traits.
+ * @param {string} fontFamily Computed font-family string.
+ * @param {string} toLocale Destination locale key.
+ * @returns {string} System fallback font family.
+ */
+function chooseFallbackFont(fontFamily, toLocale) {
+    const profile = LOCALE_FONT_PROFILE[toLocale] ?? LOCALE_FONT_PROFILE["cn"];
+    const sample = fontFamily.toLowerCase();
+
+    if (sample.includes("kai")) {
+        return profile.fallbackKai;
+    }
+
+    if (sample.includes("serif") || sample.includes("song") || sample.includes("ming")) {
+        return profile.fallbackSerif;
+    }
+
+    if (sample.includes("mono")) {
+        return profile.fallbackMono;
+    }
+
+    return profile.fallbackSans;
+}
+
+/**
+ * Applies a reversible inline font-family override to an element.
+ * @param {HTMLElement} element Target element.
+ * @param {string} fontFamily New font-family value.
+ */
+function applyFontOverride(element, fontFamily) {
+    if (typeof element[ORIGINAL_FONT_FAMILY_FLAG] !== "string") {
+        element[ORIGINAL_FONT_FAMILY_FLAG] = element.style.fontFamily ?? "";
+    }
+
+    if (element.style.fontFamily === fontFamily) {
+        OVERRIDDEN_FONT_ELEMENTS.add(element);
+        return;
+    }
+
+    element.style.fontFamily = fontFamily;
+    OVERRIDDEN_FONT_ELEMENTS.add(element);
+}
+
+/**
+ * Applies font override to a converted text node when rules are satisfied.
+ * @param {Text} textNode Converted text node.
+ * @param {string} original Original text content.
+ * @param {string} converted Converted text content.
+ */
+function maybeOverrideFontForConvertedText(textNode, original, converted) {
+    if (!currentSettings.fontOverride || original === converted) {
+        return;
+    }
+
+    const parent = textNode.parentElement;
+    if (!(parent instanceof HTMLElement)) {
+        return;
+    }
+
+    const localePair = CONFIG_TO_LOCALE[currentSettings.config];
+    if (!localePair) {
+        return;
+    }
+
+    const computedFontFamily = globalThis.getComputedStyle(parent).fontFamily ?? "";
+    if (!isSourceNativeFont(computedFontFamily, localePair.from)) {
+        return;
+    }
+
+    const remapped = remapFontFamily(computedFontFamily, localePair.from, localePair.to);
+    const destinationFont = remapped === computedFontFamily
+        ? chooseFallbackFont(computedFontFamily, localePair.to)
+        : remapped;
+
+    applyFontOverride(parent, destinationFont);
+}
+
+/**
  * Converts a single text node from its stored original value.
  * @param {Text} textNode Text node to convert.
  */
@@ -134,21 +335,28 @@ function convertTextNode(textNode) {
     }
 
     const converted = activeConverter(original);
-    guardConvertedText(textNode, converted);
+    const hasChanged = guardConvertedText(textNode, converted);
+    if (!hasChanged) {
+        return;
+    }
+
+    maybeOverrideFontForConvertedText(textNode, original, converted);
 }
 
 /**
  * Applies converted text only when needed and marks extension-originated writes.
  * @param {Text} textNode Text node to update.
  * @param {string} converted Converted text.
+ * @returns {boolean} True when text node content changed.
  */
 function guardConvertedText(textNode, converted) {
     if (converted === textNode.nodeValue) {
-        return;
+        return false;
     }
 
     textNode[SELF_MUTATION_FLAG] = true;
     textNode.nodeValue = converted;
+    return true;
 }
 
 /**
@@ -193,6 +401,32 @@ function walkTextNodes(root, callback) {
 }
 
 /**
+ * Restores all font overrides applied by this extension.
+ */
+function restoreOverriddenFonts() {
+    OVERRIDDEN_FONT_ELEMENTS.forEach((element) => {
+        if (!(element instanceof HTMLElement)) {
+            return;
+        }
+
+        const originalFontFamily = element[ORIGINAL_FONT_FAMILY_FLAG];
+        if (typeof originalFontFamily !== "string") {
+            return;
+        }
+
+        if (originalFontFamily) {
+            element.style.fontFamily = originalFontFamily;
+        } else {
+            element.style.removeProperty("font-family");
+        }
+
+        delete element[ORIGINAL_FONT_FAMILY_FLAG];
+    });
+
+    OVERRIDDEN_FONT_ELEMENTS.clear();
+}
+
+/**
  * Restores the complete document to original text values.
  */
 function restoreDocument() {
@@ -202,6 +436,7 @@ function restoreDocument() {
 
     isApplying = true;
     walkTextNodes(document.documentElement, restoreTextNode);
+    restoreOverriddenFonts();
     isApplying = false;
 }
 
@@ -236,7 +471,7 @@ function createConverter(config) {
  * Applies settings by restoring text first, then converting if enabled.
  *
  * Converter initialization is lazy and only occurs when conversion is enabled.
- * @param {{enabled: boolean, config: string}} settings New settings.
+ * @param {{enabled: boolean, config: string, fontOverride: boolean}} settings New settings.
  */
 function applySettings(settings) {
     const normalized = normalizeSettings(settings);
@@ -262,12 +497,14 @@ function applySettings(settings) {
 
 /**
  * Compares two settings objects for semantic equality.
- * @param {{enabled: boolean, config: string}} lhs Left settings.
- * @param {{enabled: boolean, config: string}} rhs Right settings.
+ * @param {{enabled: boolean, config: string, fontOverride: boolean}} lhs Left settings.
+ * @param {{enabled: boolean, config: string, fontOverride: boolean}} rhs Right settings.
  * @returns {boolean} True when both settings represent the same mode.
  */
 function areSettingsEqual(lhs, rhs) {
-    return lhs.enabled === rhs.enabled && lhs.config === rhs.config;
+    return lhs.enabled === rhs.enabled
+        && lhs.config === rhs.config
+        && lhs.fontOverride === rhs.fontOverride;
 }
 
 /**

@@ -2,7 +2,8 @@ const NATIVE_APP_IDENTIFIER = "Vaida.app.OpenCC.Extension";
 
 const DEFAULT_SETTINGS = Object.freeze({
     enabled: true,
-    config: "t2s"
+    config: "t2s",
+    fontOverride: false
 });
 
 const SUPPORTED_CONFIGS = new Set([
@@ -37,7 +38,7 @@ const shouldUseNativeMessaging = !isIPadWebExtensionRuntime();
 /**
  * Ensures external inputs become a safe settings object.
  * @param {unknown} rawSettings Untrusted settings payload.
- * @returns {{enabled: boolean, config: string}} Normalized OpenCC settings.
+ * @returns {{enabled: boolean, config: string, fontOverride: boolean}} Normalized OpenCC settings.
  */
 function normalizeSettings(rawSettings) {
     const candidate = rawSettings && typeof rawSettings === "object" ? rawSettings : {};
@@ -45,15 +46,18 @@ function normalizeSettings(rawSettings) {
     const config = typeof candidate.config === "string" && SUPPORTED_CONFIGS.has(candidate.config)
         ? candidate.config
         : DEFAULT_SETTINGS.config;
+    const fontOverride = typeof candidate.fontOverride === "boolean"
+        ? candidate.fontOverride
+        : DEFAULT_SETTINGS.fontOverride;
 
-    return { enabled, config };
+    return { enabled, config, fontOverride };
 }
 
 /**
  * Reads settings from the native extension handler.
  *
  * Native messaging is skipped on iOS/iPadOS to avoid popup startup crashes.
- * @returns {Promise<{enabled: boolean, config: string} | null>} Native settings, or null when unavailable.
+ * @returns {Promise<{enabled: boolean, config: string, fontOverride: boolean} | null>} Native settings, or null when unavailable.
  */
 async function getNativeSettings() {
     if (!shouldUseNativeMessaging) {
@@ -72,7 +76,7 @@ async function getNativeSettings() {
  * Persists settings to the native extension handler.
  *
  * Native messaging is skipped on iOS/iPadOS to avoid popup startup crashes.
- * @param {{enabled: boolean, config: string}} settings Normalized settings.
+ * @param {{enabled: boolean, config: string, fontOverride: boolean}} settings Normalized settings.
  * @returns {Promise<boolean>} True if native persistence succeeded.
  */
 async function setNativeSettings(settings) {
@@ -93,7 +97,7 @@ async function setNativeSettings(settings) {
 
 /**
  * Reads settings using native storage first, then browser storage fallback.
- * @returns {Promise<{enabled: boolean, config: string}>} Effective extension settings.
+ * @returns {Promise<{enabled: boolean, config: string, fontOverride: boolean}>} Effective extension settings.
  */
 async function getEffectiveSettings() {
     const native = await getNativeSettings();
@@ -109,8 +113,8 @@ async function getEffectiveSettings() {
 
 /**
  * Writes settings to native storage when available and always mirrors to browser storage.
- * @param {{enabled: boolean, config: string}} nextSettings Settings to persist.
- * @returns {Promise<{enabled: boolean, config: string}>} Persisted settings.
+ * @param {{enabled: boolean, config: string, fontOverride: boolean}} nextSettings Settings to persist.
+ * @returns {Promise<{enabled: boolean, config: string, fontOverride: boolean}>} Persisted settings.
  */
 async function persistSettings(nextSettings) {
     const normalized = normalizeSettings(nextSettings);
@@ -121,7 +125,7 @@ async function persistSettings(nextSettings) {
 
 /**
  * Broadcasts settings to all tabs so content scripts can re-convert immediately.
- * @param {{enabled: boolean, config: string}} settings Updated settings.
+ * @param {{enabled: boolean, config: string, fontOverride: boolean}} settings Updated settings.
  * @returns {Promise<void>}
  */
 async function broadcastSettings(settings) {
@@ -146,7 +150,7 @@ async function broadcastSettings(settings) {
 /**
  * Applies settings changes from popup/app requests.
  * @param {unknown} requestedSettings Input payload from caller.
- * @returns {Promise<{enabled: boolean, config: string}>} Updated settings.
+ * @returns {Promise<{enabled: boolean, config: string, fontOverride: boolean}>} Updated settings.
  */
 async function updateSettings(requestedSettings) {
     const settings = await persistSettings(requestedSettings);
@@ -156,7 +160,7 @@ async function updateSettings(requestedSettings) {
 
 /**
  * Sends an immediate conversion request to the active tab.
- * @returns {Promise<{enabled: boolean, config: string}>} Effective settings used for conversion.
+ * @returns {Promise<{enabled: boolean, config: string, fontOverride: boolean}>} Effective settings used for conversion.
  */
 async function convertActiveTabNow() {
     const settings = await getEffectiveSettings();

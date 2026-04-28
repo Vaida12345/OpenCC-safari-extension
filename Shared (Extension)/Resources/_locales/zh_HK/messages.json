@@ -19,6 +19,10 @@
         "message": "輸出文字",
         "description": "目標語言選擇欄位標籤。"
     },
+    "popup_override_font": {
+        "message": "覆寫地區字體",
+        "description": "當文字發生轉換時，將來源地區字體替換為目標地區系統字體的開關標籤。"
+    },
     "popup_convert_now": {
         "message": "即時轉換此頁",
         "description": "立即轉換目前頁面的按鈕文字。"

@@ -29,6 +29,7 @@ struct OpenCCApp: App {
         }
 #if os(macOS)
         .windowResizability(.contentSize)
+        .windowStyle(.hiddenTitleBar)
 #endif
     }
 }

@@ -11,6 +11,7 @@ import SafariServices
 private let appGroupSuiteName = "group.Vaida.app.OpenCC"
 private let openCCEnabledKey = "opencc.enabled"
 private let openCCConfigKey = "opencc.config"
+private let openCCFontOverrideKey = "opencc.fontOverride"
 private let defaultOpenCCConfig = "t2s"
 private let supportedOpenCCConfigs: Set<String> = [
     "s2t", "t2s", "s2tw", "tw2s", "s2hk", "hk2s", "s2twp", "tw2sp",
@@ -29,10 +30,12 @@ class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
         let enabled = sharedDefaults.object(forKey: openCCEnabledKey) as? Bool ?? true
         let rawConfig = sharedDefaults.string(forKey: openCCConfigKey) ?? defaultOpenCCConfig
         let config = supportedOpenCCConfigs.contains(rawConfig) ? rawConfig : defaultOpenCCConfig
+        let fontOverride = sharedDefaults.object(forKey: openCCFontOverrideKey) as? Bool ?? false
 
         return [
             "enabled": enabled,
-            "config": config
+            "config": config,
+            "fontOverride": fontOverride
         ]
     }
 
@@ -42,6 +45,7 @@ class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
             let dictionary,
             let enabled = dictionary["enabled"] as? Bool,
             let config = dictionary["config"] as? String,
+            let fontOverride = dictionary["fontOverride"] as? Bool,
             supportedOpenCCConfigs.contains(config)
         else {
             return loadSettings()
@@ -49,10 +53,12 @@ class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
 
         sharedDefaults.set(enabled, forKey: openCCEnabledKey)
         sharedDefaults.set(config, forKey: openCCConfigKey)
+        sharedDefaults.set(fontOverride, forKey: openCCFontOverrideKey)
 
         return [
             "enabled": enabled,
-            "config": config
+            "config": config,
+            "fontOverride": fontOverride
         ]
     }
 

@@ -19,6 +19,10 @@
         "message": "输出文本",
         "description": "目标语言选择控件标签。"
     },
+    "popup_override_font": {
+        "message": "覆盖地区字体",
+        "description": "当文本发生转换时，将源地区字体替换为目标地区系统字体的开关标签。"
+    },
     "popup_convert_now": {
         "message": "立即转换此页面",
         "description": "立即转换当前页面的按钮文本。"
