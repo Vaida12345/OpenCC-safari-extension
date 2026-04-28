@@ -24,6 +24,7 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
     background: #ffffff;
     color: #1c1c1e;
+    -webkit-text-size-adjust: 100%;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -37,7 +38,11 @@ body {
     display: grid;
     width: 100%;
     min-height: 100%;
-    padding: var(--space-4);
+    padding:
+        calc(var(--space-4) + env(safe-area-inset-top, 0px))
+        calc(var(--space-4) + env(safe-area-inset-right, 0px))
+        calc(var(--space-4) + env(safe-area-inset-bottom, 0px))
+        calc(var(--space-4) + env(safe-area-inset-left, 0px));
 }
 
 .settings-card {
@@ -135,6 +140,32 @@ select:focus-visible,
     opacity: 0.8;
 }
 
+@media (max-width: 430px) {
+    .popup-shell {
+        padding:
+            calc(10px + env(safe-area-inset-top, 0px))
+            calc(10px + env(safe-area-inset-right, 0px))
+            calc(12px + env(safe-area-inset-bottom, 0px))
+            calc(10px + env(safe-area-inset-left, 0px));
+    }
+
+    .settings-card {
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(120, 120, 128, 0.22);
+        background: var(--surface);
+    }
+
+    .toggle-row,
+    .field {
+        font-size: 12px;
+    }
+
+    select {
+        height: 30px;
+    }
+}
+
 @media (min-width: 540px) {
     body {
         background:
@@ -189,5 +220,58 @@ select:focus-visible,
         border-color: rgba(120, 120, 128, 0.28);
         background: rgba(28, 28, 30, 0.82);
         box-shadow: 0 16px 38px rgba(0, 0, 0, 0.44);
+    }
+}
+
+/** iPhone */
+@supports (-webkit-touch-callout: none) {
+    @media (pointer: coarse) {
+        body {
+            background: #f2f2f7;
+            color: #1c1c1e;
+        }
+
+        .toggle-row,
+        .field {
+            font-size: 16px;
+        }
+
+        .field-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .toggle {
+            width: 51px;
+            height: 31px;
+        }
+
+        .toggle .track::after {
+            top: 2px;
+            left: 2px;
+            width: 27px;
+            height: 27px;
+        }
+
+        .toggle input:checked + .track::after {
+            transform: translateX(20px);
+        }
+
+        select {
+            height: 40px;
+            border-radius: 12px;
+        }
+
+        #status {
+            min-height: 22px;
+            font-size: 13px;
+        }
+    }
+
+    @media (prefers-color-scheme: dark) and (pointer: coarse) {
+        body {
+            background: #111113;
+            color: #f2f2f7;
+        }
     }
 }
