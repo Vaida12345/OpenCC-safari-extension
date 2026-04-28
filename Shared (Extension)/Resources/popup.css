@@ -4,9 +4,9 @@
     --space-2: 12px;
     --space-3: 14px;
     --space-4: 16px;
-    --surface: color-mix(in srgb, Canvas 92%, transparent);
-    --surface-border: color-mix(in srgb, currentColor 16%, transparent);
-    --focus-ring: color-mix(in srgb, AccentColor 50%, transparent);
+    --surface: rgba(127, 127, 127, 0.08);
+    --surface-border: rgba(127, 127, 127, 0.20);
+    --focus-ring: rgba(10, 132, 255, 0.45);
 }
 
 * {
@@ -22,7 +22,15 @@ body {
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-    background: Canvas;
+    background: #ffffff;
+    color: #1c1c1e;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #1c1c1e;
+        color: #f2f2f7;
+    }
 }
 
 .popup-shell {
@@ -64,7 +72,7 @@ body {
     position: absolute;
     inset: 0;
     border-radius: 999px;
-    background: color-mix(in srgb, currentColor 24%, transparent);
+    background: rgba(120, 120, 128, 0.32);
     transition: background-color 150ms ease;
 }
 
@@ -76,13 +84,13 @@ body {
     width: 16px;
     height: 16px;
     border-radius: 999px;
-    background: Canvas;
-    box-shadow: 0 2px 8px color-mix(in srgb, currentColor 22%, transparent);
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
     transition: transform 150ms ease;
 }
 
 .toggle input:checked + .track {
-    background: AccentColor;
+    background: #0a84ff;
 }
 
 .toggle input:checked + .track::after {
@@ -107,22 +115,19 @@ input {
     font: inherit;
 }
 
-select,
-button {
-    min-height: 27px;
-}
-
 select {
+    height: 27px;
     border-radius: 10px;
-    border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
-    background: color-mix(in srgb, Canvas 92%, transparent);
+    border: 1px solid rgba(120, 120, 128, 0.36);
+    background: rgba(127, 127, 127, 0.08);
     padding: 0 10px;
 }
 
 button {
+    height: 30px;
     border-radius: 10px;
-    border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
-    background: color-mix(in srgb, Canvas 80%, AccentColor 10%);
+    border: 1px solid rgba(120, 120, 128, 0.30);
+    background: rgba(10, 132, 255, 0.14);
     font-weight: 500;
     font-size: 13px;
 }

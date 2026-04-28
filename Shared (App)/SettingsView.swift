@@ -40,6 +40,9 @@ struct OpenCCSettingsView: View {
                             }
                         } label: {
                             Label("Github", systemImage: "link")
+#if os(iOS)
+                                .labelStyle(.titleOnly)
+#endif
                                 .font(.caption.weight(.semibold))
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 6)
@@ -77,7 +80,7 @@ struct OpenCCSettingsView: View {
 #endif
                 }
 
-                Text(extensionStatusMessage)
+                extensionStatusMessage
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
@@ -115,7 +118,7 @@ struct OpenCCSettingsView: View {
             Label("Privacy", systemImage: "hand.raised")
                 .font(.headline)
 
-            Text("All conversions run completely offline. OpenCC makes no internet connection.")
+            Text("All conversions run completely offline. CC Converter makes no internet connection.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.leading)
@@ -212,8 +215,8 @@ struct OpenCCSettingsView: View {
         }
     }
 
-    private var extensionStatusMessage: String {
-        viewModel.extensionMessage
+    private var extensionStatusMessage: Text {
+        Text(viewModel.extensionMessage)
     }
 #else
     private var extensionStatusTitle: String { "Unavailable" }
@@ -222,8 +225,8 @@ struct OpenCCSettingsView: View {
 
     private var extensionStatusTint: Color { .secondary }
 
-    private var extensionStatusMessage: String {
-        "You can manage CC Converter in Settings > Safari > Extensions."
+    private var extensionStatusMessage: Text {
+        Text("You can manage CC Converter in Settings > Safari > Extensions.")
     }
 #endif
 }

@@ -17,6 +17,7 @@
         "persistent": false
     },
     "action": {
+        "default_title": "CC Converter",
         "default_popup": "popup.html",
         "default_icon": "images/toolbar-icon.svg"
     },
