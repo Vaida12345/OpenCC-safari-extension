@@ -71,12 +71,17 @@ struct OpenCCSettingsView: View {
 #if os(macOS)
                     Spacer(minLength: 0)
                     
-                    Label(extensionStatusTitle, systemImage: extensionStatusSymbol)
-                        .font(.caption.weight(.semibold))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .foregroundStyle(extensionStatusTint)
-                        .background(extensionStatusTint.opacity(0.14), in: Capsule())
+                    Button {
+                        viewModel.refreshSafariExtensionState()
+                    } label: {
+                        Label(extensionStatusTitle, systemImage: extensionStatusSymbol)
+                            .font(.caption.weight(.semibold))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .foregroundStyle(extensionStatusTint)
+                            .background(extensionStatusTint.opacity(0.14), in: Capsule())
+                    }
+                    .buttonStyle(.plain)
 #endif
                 }
 
@@ -182,7 +187,7 @@ struct OpenCCSettingsView: View {
     }
 
 #if os(macOS)
-    private var extensionStatusTitle: String {
+    private var extensionStatusTitle: LocalizedStringResource {
         switch viewModel.extensionState {
         case .on:
             return "Enabled"

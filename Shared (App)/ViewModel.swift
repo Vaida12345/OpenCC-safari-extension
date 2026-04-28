@@ -37,7 +37,7 @@ final class OpenCCSettingsViewModel: ObservableObject {
     }
     
 #if os(macOS)
-    var extensionMessage: String {
+    var extensionMessage: LocalizedStringResource {
         switch extensionState {
         case .on:
             if useSafariSettingsCopy {
@@ -60,16 +60,14 @@ final class OpenCCSettingsViewModel: ObservableObject {
         }
     }
     
-    var preferencesButtonTitle: String {
+    var preferencesButtonTitle: LocalizedStringResource {
         useSafariSettingsCopy ? "Quit and Open Safari Settings..." : "Quit and Open Safari Extensions Preferences..."
     }
     
     /// Loads Safari extension state and updates macOS-specific status messaging.
     func refreshSafariExtensionState() {
-        SFSafariExtensionManager.getStateOfSafariExtension(withIdentifier: extensionBundleIdentifier) { [weak self] state, error in
-            DispatchQueue.main.async {
-                guard let self else { return }
-                
+        SFSafariExtensionManager.getStateOfSafariExtension(withIdentifier: extensionBundleIdentifier) { [self] state, error in
+            Task { @MainActor in
                 self.useSafariSettingsCopy = {
                     if #available(macOS 13, *) {
                         return true
