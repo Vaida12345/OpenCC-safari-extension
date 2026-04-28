@@ -134,3 +134,60 @@ select:focus-visible,
     font-size: 12px;
     opacity: 0.8;
 }
+
+@media (min-width: 540px) {
+    body {
+        background:
+            radial-gradient(circle at top, rgba(10, 132, 255, 0.10), transparent 58%),
+            #f2f2f7;
+    }
+
+    .popup-shell {
+        place-items: center;
+        padding: 32px 20px;
+    }
+
+    .settings-card {
+        width: min(100%, 520px);
+        gap: 18px;
+        padding: 24px;
+        border-radius: 18px;
+        border: 1px solid rgba(120, 120, 128, 0.22);
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.12);
+        backdrop-filter: blur(10px);
+    }
+
+    .toggle-row,
+    .field {
+        font-size: 14px;
+    }
+
+    .field-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    select {
+        height: 32px;
+    }
+
+    #status {
+        min-height: 20px;
+        font-size: 13px;
+    }
+}
+
+@media (prefers-color-scheme: dark) and (min-width: 540px) {
+    body {
+        background:
+            radial-gradient(circle at top, rgba(10, 132, 255, 0.16), transparent 58%),
+            #111113;
+    }
+
+    .settings-card {
+        border-color: rgba(120, 120, 128, 0.28);
+        background: rgba(28, 28, 30, 0.82);
+        box-shadow: 0 16px 38px rgba(0, 0, 0, 0.44);
+    }
+}
