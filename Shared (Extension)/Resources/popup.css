@@ -140,7 +140,7 @@ select:focus-visible,
     opacity: 0.8;
 }
 
-/** macOS */
+/** macOS & iOS landscape */
 @media (max-width: 430px) {
     .toggle-row,
     .field {
@@ -152,6 +152,7 @@ select:focus-visible,
     }
 }
 
+/** iPadOS */
 @media (min-width: 540px) {
     body {
         background:
