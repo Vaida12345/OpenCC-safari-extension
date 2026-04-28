@@ -16,6 +16,9 @@ OpenCC is a Safari extension project with iOS and macOS host apps.
 - Manage extension state from the host app (especially on macOS).
 - Sync/read settings through the native bridge (`SafariWebExtensionHandler`).
 
+## Installation
+Please [download from App Store](https://apps.apple.com/us/app/cc-converter/id6764072003) or [see release page](https://github.com/Vaida12345/OpenCC-safari-extension/releases).
+
 ## Project Layout
 
 - `Shared (App)/`
