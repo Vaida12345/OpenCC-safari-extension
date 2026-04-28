@@ -115,8 +115,12 @@ input {
     font: inherit;
 }
 
-select {
+select,
+button {
     height: 27px;
+}
+
+select {
     border-radius: 10px;
     border: 1px solid rgba(120, 120, 128, 0.36);
     background: rgba(127, 127, 127, 0.08);
@@ -124,7 +128,6 @@ select {
 }
 
 button {
-    height: 30px;
     border-radius: 10px;
     border: 1px solid rgba(120, 120, 128, 0.30);
     background: rgba(10, 132, 255, 0.14);

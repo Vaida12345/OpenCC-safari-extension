@@ -11,6 +11,30 @@ const SUPPORTED_CONFIGS = new Set([
 ]);
 
 /**
+ * Returns true when running in an iPadOS Web Extension context.
+ *
+ * iPadOS may present itself as MacIntel, so touch-point probing is required.
+ * @returns {boolean} True when current runtime is iPadOS.
+ */
+function isIPadWebExtensionRuntime() {
+    const navigatorObject = globalThis.navigator;
+    if (!navigatorObject) {
+        return false;
+    }
+
+    const userAgent = navigatorObject.userAgent ?? "";
+    if (/iPad/.test(userAgent)) {
+        return true;
+    }
+
+    const platform = navigatorObject.platform ?? "";
+    const maxTouchPoints = Number(navigatorObject.maxTouchPoints ?? 0);
+    return platform === "MacIntel" && maxTouchPoints > 1;
+}
+
+const shouldUseNativeMessaging = !isIPadWebExtensionRuntime();
+
+/**
  * Ensures external inputs become a safe settings object.
  * @param {unknown} rawSettings Untrusted settings payload.
  * @returns {{enabled: boolean, config: string}} Normalized OpenCC settings.
@@ -27,9 +51,15 @@ function normalizeSettings(rawSettings) {
 
 /**
  * Reads settings from the native extension handler.
+ *
+ * Native messaging is skipped on iOS/iPadOS to avoid popup startup crashes.
  * @returns {Promise<{enabled: boolean, config: string} | null>} Native settings, or null when unavailable.
  */
 async function getNativeSettings() {
+    if (!shouldUseNativeMessaging) {
+        return null;
+    }
+
     try {
         const response = await browser.runtime.sendNativeMessage(NATIVE_APP_IDENTIFIER, { action: "getSettings" });
         return normalizeSettings(response?.settings);
@@ -40,10 +70,16 @@ async function getNativeSettings() {
 
 /**
  * Persists settings to the native extension handler.
+ *
+ * Native messaging is skipped on iOS/iPadOS to avoid popup startup crashes.
  * @param {{enabled: boolean, config: string}} settings Normalized settings.
  * @returns {Promise<boolean>} True if native persistence succeeded.
  */
 async function setNativeSettings(settings) {
+    if (!shouldUseNativeMessaging) {
+        return false;
+    }
+
     try {
         const response = await browser.runtime.sendNativeMessage(NATIVE_APP_IDENTIFIER, {
             action: "setSettings",
@@ -118,6 +154,95 @@ async function updateSettings(requestedSettings) {
     return settings;
 }
 
+/**
+ * Sends an immediate conversion request to the active tab.
+ * @returns {Promise<{enabled: boolean, config: string}>} Effective settings used for conversion.
+ */
+async function convertActiveTabNow() {
+    const settings = await getEffectiveSettings();
+    const [activeTab] = await browser.tabs.query({ active: true, currentWindow: true });
+
+    if (activeTab && typeof activeTab.id === "number") {
+        try {
+            await browser.tabs.sendMessage(activeTab.id, { type: "opencc.convertNow", settings });
+        } catch {
+            // Ignore unavailable tabs.
+        }
+    }
+
+    return settings;
+}
+
+/**
+ * Opens extension settings in a regular tab when popover presentation is unavailable.
+ * @returns {Promise<void>}
+ */
+async function openSettingsTab() {
+    const url = browser.runtime.getURL("popup.html");
+    await browser.tabs.create({ url });
+}
+
+/**
+ * Returns true when the runtime can attempt programmatic popover presentation.
+ * @returns {boolean}
+ */
+function canAttemptPopoverPresentation() {
+    return Boolean(
+        browser.action
+        && typeof browser.action.setPopup === "function"
+        && typeof browser.action.openPopup === "function"
+    );
+}
+
+/**
+ * Tries to open popover first and falls back to tab settings when popover is unavailable.
+ * @returns {Promise<void>}
+ */
+async function openPopoverOrFallback() {
+    if (!canAttemptPopoverPresentation()) {
+        await openSettingsTab();
+        return;
+    }
+
+    try {
+        await browser.action.setPopup({ popup: "popup.html" });
+        await browser.action.openPopup();
+    } catch {
+        await openSettingsTab();
+    } finally {
+        try {
+            await browser.action.setPopup({ popup: "" });
+        } catch {
+            // Ignore popup reset failures.
+        }
+    }
+}
+
+/**
+ * Configures iOS/iPadOS action behavior: prefer popover, fallback to a new tab.
+ *
+ * Safari with compact tab bar can fail to anchor extension popovers on iPad.
+ * @returns {Promise<void>}
+ */
+async function configureActionForRuntime() {
+    if (!isIPadWebExtensionRuntime()) {
+        return;
+    }
+
+    try {
+        await browser.action.setPopup({ popup: "" });
+    } catch {
+        // Ignore environments where popup override is unavailable.
+    }
+
+    browser.action.onClicked.addListener(() => {
+        openPopoverOrFallback()
+            .catch(() => {
+                // Ignore runtime failures.
+            });
+    });
+}
+
 browser.runtime.onInstalled.addListener(async () => {
     const settings = await getEffectiveSettings();
     await persistSettings(settings);
@@ -129,6 +254,11 @@ browser.runtime.onStartup.addListener(() => {
             // Ignore startup bootstrap failures.
         });
 });
+
+configureActionForRuntime()
+    .catch(() => {
+        // Ignore runtime action configuration failures.
+    });
 
 getEffectiveSettings()
     .catch(() => {
@@ -149,18 +279,7 @@ browser.runtime.onMessage.addListener((message) => {
     }
 
     if (message.type === "opencc.convertNow") {
-        return getEffectiveSettings().then(async (settings) => {
-            const [activeTab] = await browser.tabs.query({ active: true, currentWindow: true });
-            if (activeTab && typeof activeTab.id === "number") {
-                try {
-                    await browser.tabs.sendMessage(activeTab.id, { type: "opencc.convertNow", settings });
-                } catch {
-                    // Ignore unavailable tabs.
-                }
-            }
-
-            return { settings };
-        });
+        return convertActiveTabNow().then((settings) => ({ settings }));
     }
 
     return undefined;
