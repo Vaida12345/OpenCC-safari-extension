@@ -593,11 +593,6 @@ browser.runtime.onMessage.addListener((message) => {
         return Promise.resolve({ ok: true });
     }
 
-    if (message.type === "opencc.convertNow") {
-        applySettings(message.settings ?? currentSettings);
-        return Promise.resolve({ ok: true });
-    }
-
     return undefined;
 });
 

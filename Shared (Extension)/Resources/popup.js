@@ -136,7 +136,6 @@ const enabledToggle = document.getElementById("enabled-toggle");
 const inputSelect = document.getElementById("input-select");
 const outputSelect = document.getElementById("output-select");
 const fontOverrideToggle = document.getElementById("font-override-toggle");
-const convertNowButton = document.getElementById("convert-now");
 const status = document.getElementById("status");
 
 let cachedActiveTabId = null;
@@ -327,20 +326,6 @@ async function saveSettings() {
 }
 
 /**
- * Requests content script conversion on the active tab.
- */
-async function convertNow() {
-    const tabId = cachedActiveTabId ?? await resolveActiveTabId();
-    cachedActiveTabId = tabId;
-
-    await browser.runtime.sendMessage({ type: "opencc.convertNow", tabId });
-    setModeStatus(
-        outputSelect.value,
-        t("popup_status_conversion_requested", "Conversion requested for active tab")
-    );
-}
-
-/**
  * Initializes popup state and event handlers.
  */
 async function initPopup() {
@@ -359,7 +344,6 @@ async function initPopup() {
         saveSettings();
     });
     outputSelect.addEventListener("change", saveSettings);
-    convertNowButton.addEventListener("click", convertNow);
 }
 
 initPopup().catch(() => {

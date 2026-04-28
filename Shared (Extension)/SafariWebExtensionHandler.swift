@@ -12,6 +12,7 @@ private let appGroupSuiteName = "group.Vaida.app.OpenCC"
 private let openCCEnabledKey = "opencc.enabled"
 private let openCCConfigKey = "opencc.config"
 private let openCCFontOverrideKey = "opencc.fontOverride"
+private let openCCLegacyFontOverrideKey = "opencc.overrideFont"
 private let defaultOpenCCConfig = "t2s"
 private let supportedOpenCCConfigs: Set<String> = [
     "s2t", "t2s", "s2tw", "tw2s", "s2hk", "hk2s", "s2twp", "tw2sp",
@@ -25,12 +26,32 @@ class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
         UserDefaults(suiteName: appGroupSuiteName) ?? .standard
     }
 
+    /// Reads a boolean setting from a dictionary and supports legacy key aliases.
+    private func boolValue(in dictionary: [String: Any], forKeys keys: [String]) -> Bool? {
+        for key in keys {
+            if let value = dictionary[key] as? Bool {
+                return value
+            }
+        }
+
+        return nil
+    }
+
+    /// Loads persisted font override preference and falls back to a legacy key when needed.
+    private func loadFontOverrideSetting() -> Bool {
+        if let value = sharedDefaults.object(forKey: openCCFontOverrideKey) as? Bool {
+            return value
+        }
+
+        return sharedDefaults.object(forKey: openCCLegacyFontOverrideKey) as? Bool ?? false
+    }
+
     /// Reads persisted settings and validates config code.
     private func loadSettings() -> [String: Any] {
         let enabled = sharedDefaults.object(forKey: openCCEnabledKey) as? Bool ?? true
         let rawConfig = sharedDefaults.string(forKey: openCCConfigKey) ?? defaultOpenCCConfig
         let config = supportedOpenCCConfigs.contains(rawConfig) ? rawConfig : defaultOpenCCConfig
-        let fontOverride = sharedDefaults.object(forKey: openCCFontOverrideKey) as? Bool ?? false
+        let fontOverride = loadFontOverrideSetting()
 
         return [
             "enabled": enabled,
@@ -41,19 +62,26 @@ class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
 
     /// Validates and persists settings received from JavaScript.
     private func saveSettings(_ dictionary: [String: Any]?) -> [String: Any] {
-        guard
-            let dictionary,
-            let enabled = dictionary["enabled"] as? Bool,
-            let config = dictionary["config"] as? String,
-            let fontOverride = dictionary["fontOverride"] as? Bool,
-            supportedOpenCCConfigs.contains(config)
-        else {
+        guard let dictionary else {
+            return loadSettings()
+        }
+
+        let currentSettings = loadSettings()
+        let enabled = boolValue(in: dictionary, forKeys: ["enabled"])
+            ?? (currentSettings["enabled"] as? Bool ?? true)
+        let config = dictionary["config"] as? String
+            ?? (currentSettings["config"] as? String ?? defaultOpenCCConfig)
+        let fontOverride = boolValue(in: dictionary, forKeys: ["fontOverride", "overrideFont", "font_override"])
+            ?? (currentSettings["fontOverride"] as? Bool ?? false)
+
+        guard supportedOpenCCConfigs.contains(config) else {
             return loadSettings()
         }
 
         sharedDefaults.set(enabled, forKey: openCCEnabledKey)
         sharedDefaults.set(config, forKey: openCCConfigKey)
         sharedDefaults.set(fontOverride, forKey: openCCFontOverrideKey)
+        sharedDefaults.set(fontOverride, forKey: openCCLegacyFontOverrideKey)
 
         return [
             "enabled": enabled,

@@ -23,17 +23,9 @@
         "message": "覆寫地區字體",
         "description": "當文字發生轉換時，將來源地區字體替換為目標地區系統字體的開關標籤。"
     },
-    "popup_convert_now": {
-        "message": "即時轉換此頁",
-        "description": "立即轉換目前頁面的按鈕文字。"
-    },
     "popup_status_saved": {
         "message": "已儲存",
         "description": "儲存設定後顯示的狀態後綴。"
-    },
-    "popup_status_conversion_requested": {
-        "message": "已要求轉換目前分頁",
-        "description": "要求轉換目前分頁後顯示的狀態後綴。"
     },
     "popup_status_failed_load_settings": {
         "message": "載入設定失敗",

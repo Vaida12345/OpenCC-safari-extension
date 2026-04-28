@@ -237,26 +237,6 @@ async function updateSettings(requestedSettings, preferredTabId) {
 }
 
 /**
- * Sends an immediate conversion request to the active tab.
- * @param {number | undefined | null} preferredTabId Tab id hinted by caller.
- * @returns {Promise<{enabled: boolean, config: string, fontOverride: boolean}>} Effective settings used for conversion.
- */
-async function convertActiveTabNow(preferredTabId) {
-    const settings = await getEffectiveSettings();
-    const activeTabId = await resolveTargetTabId(preferredTabId);
-
-    if (typeof activeTabId === "number") {
-        try {
-            await browser.tabs.sendMessage(activeTabId, { type: "opencc.convertNow", settings });
-        } catch {
-            // Ignore unavailable tabs.
-        }
-    }
-
-    return settings;
-}
-
-/**
  * Opens extension settings in a regular tab when popover presentation is unavailable.
  * @returns {Promise<void>}
  */
@@ -362,10 +342,6 @@ browser.runtime.onMessage.addListener((message, sender) => {
 
     if (message.type === "opencc.updateSettings") {
         return updateSettings(message.settings, preferredTabId).then((settings) => ({ settings }));
-    }
-
-    if (message.type === "opencc.convertNow") {
-        return convertActiveTabNow(preferredTabId).then((settings) => ({ settings }));
     }
 
     return undefined;

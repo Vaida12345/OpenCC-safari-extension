@@ -110,33 +110,19 @@ body {
 }
 
 select,
-button,
 input {
     font: inherit;
 }
 
-select,
-button {
-    height: 27px;
-}
-
 select {
+    height: 27px;
     border-radius: 10px;
     border: 1px solid rgba(120, 120, 128, 0.36);
     background: rgba(127, 127, 127, 0.08);
     padding: 0 10px;
 }
 
-button {
-    border-radius: 10px;
-    border: 1px solid rgba(120, 120, 128, 0.30);
-    background: rgba(10, 132, 255, 0.14);
-    font-weight: 500;
-    font-size: 13px;
-}
-
 select:focus-visible,
-button:focus-visible,
 .toggle input:focus-visible + .track {
     outline: 2px solid var(--focus-ring);
     outline-offset: 2px;

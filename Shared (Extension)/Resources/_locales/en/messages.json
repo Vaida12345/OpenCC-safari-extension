@@ -23,17 +23,9 @@
         "message": "Override Region Font",
         "description": "Toggle label to replace source-region fonts with destination-region system fonts when text changes."
     },
-    "popup_convert_now": {
-        "message": "Convert This Page Now",
-        "description": "Button text to immediately convert the active page."
-    },
     "popup_status_saved": {
         "message": "Saved",
         "description": "Status suffix shown after settings are saved."
-    },
-    "popup_status_conversion_requested": {
-        "message": "Conversion requested for active tab",
-        "description": "Status suffix shown after requesting conversion on the active tab."
     },
     "popup_status_failed_load_settings": {
         "message": "Failed to load settings",

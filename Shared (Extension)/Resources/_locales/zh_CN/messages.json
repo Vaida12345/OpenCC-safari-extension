@@ -23,17 +23,9 @@
         "message": "覆盖地区字体",
         "description": "当文本发生转换时，将源地区字体替换为目标地区系统字体的开关标签。"
     },
-    "popup_convert_now": {
-        "message": "立即转换此页面",
-        "description": "立即转换当前页面的按钮文本。"
-    },
     "popup_status_saved": {
         "message": "已保存",
         "description": "设置保存后显示的状态后缀。"
-    },
-    "popup_status_conversion_requested": {
-        "message": "已请求转换当前标签页",
-        "description": "请求转换当前标签页后显示的状态后缀。"
     },
     "popup_status_failed_load_settings": {
         "message": "加载设置失败",
