@@ -124,15 +124,91 @@ async function persistSettings(nextSettings) {
 }
 
 /**
- * Broadcasts settings to all tabs so content scripts can re-convert immediately.
+ * Returns true when the tab URL belongs to this extension.
+ * @param {string | undefined} url Tab URL.
+ * @returns {boolean} True when URL is extension-owned.
+ */
+function isExtensionPageURL(url) {
+    if (typeof url !== "string") {
+        return false;
+    }
+
+    return url.startsWith(browser.runtime.getURL(""));
+}
+
+/**
+ * Selects a best-effort target tab id for messaging from popup/background events.
+ *
+ * Safari popup windows on macOS can make `currentWindow` point to the popover instead of the
+ * browsing window, so this resolver tries multiple strategies in order.
+ * @param {number | undefined | null} preferredTabId Tab id hinted by caller.
+ * @returns {Promise<number | null>} Resolved tab id, or null when unavailable.
+ */
+async function resolveTargetTabId(preferredTabId) {
+    if (typeof preferredTabId === "number") {
+        return preferredTabId;
+    }
+
+    const queryPlans = [
+        { active: true, lastFocusedWindow: true },
+        { active: true, currentWindow: true },
+        { active: true }
+    ];
+
+    for (const queryInfo of queryPlans) {
+        const tabs = await browser.tabs.query(queryInfo);
+        const webpageTab = tabs.find((tab) => typeof tab.id === "number" && !isExtensionPageURL(tab.url));
+        if (webpageTab && typeof webpageTab.id === "number") {
+            return webpageTab.id;
+        }
+
+        const fallbackTab = tabs.find((tab) => typeof tab.id === "number");
+        if (fallbackTab && typeof fallbackTab.id === "number") {
+            return fallbackTab.id;
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Sends updated settings to the active tab.
+ *
+ * Safari on macOS can occasionally skip broad tab broadcasts from popup-initiated updates,
+ * so this active-tab push guarantees immediate visible changes for the current page.
  * @param {{enabled: boolean, config: string, fontOverride: boolean}} settings Updated settings.
+ * @param {number | undefined | null} preferredTabId Tab id hinted by caller.
+ * @returns {Promise<number | null>} Active tab id when available.
+ */
+async function notifyActiveTabSettingsChanged(settings, preferredTabId) {
+    const activeTabId = await resolveTargetTabId(preferredTabId);
+    if (typeof activeTabId !== "number") {
+        return null;
+    }
+
+    try {
+        await browser.tabs.sendMessage(activeTabId, {
+            type: "opencc.settingsChanged",
+            settings
+        });
+    } catch {
+        // Ignore unavailable tabs.
+    }
+
+    return activeTabId;
+}
+
+/**
+ * Broadcasts settings to tabs so content scripts can re-convert immediately.
+ * @param {{enabled: boolean, config: string, fontOverride: boolean}} settings Updated settings.
+ * @param {number | null} excludeTabId Optional tab id to skip when it has already been updated.
  * @returns {Promise<void>}
  */
-async function broadcastSettings(settings) {
+async function broadcastSettings(settings, excludeTabId = null) {
     const tabs = await browser.tabs.query({});
 
     await Promise.all(tabs.map(async (tab) => {
-        if (typeof tab.id !== "number") {
+        if (typeof tab.id !== "number" || tab.id === excludeTabId || isExtensionPageURL(tab.url)) {
             return;
         }
 
@@ -150,25 +226,28 @@ async function broadcastSettings(settings) {
 /**
  * Applies settings changes from popup/app requests.
  * @param {unknown} requestedSettings Input payload from caller.
+ * @param {number | undefined | null} preferredTabId Tab id hinted by caller.
  * @returns {Promise<{enabled: boolean, config: string, fontOverride: boolean}>} Updated settings.
  */
-async function updateSettings(requestedSettings) {
+async function updateSettings(requestedSettings, preferredTabId) {
     const settings = await persistSettings(requestedSettings);
-    await broadcastSettings(settings);
+    const activeTabId = await notifyActiveTabSettingsChanged(settings, preferredTabId);
+    await broadcastSettings(settings, activeTabId);
     return settings;
 }
 
 /**
  * Sends an immediate conversion request to the active tab.
+ * @param {number | undefined | null} preferredTabId Tab id hinted by caller.
  * @returns {Promise<{enabled: boolean, config: string, fontOverride: boolean}>} Effective settings used for conversion.
  */
-async function convertActiveTabNow() {
+async function convertActiveTabNow(preferredTabId) {
     const settings = await getEffectiveSettings();
-    const [activeTab] = await browser.tabs.query({ active: true, currentWindow: true });
+    const activeTabId = await resolveTargetTabId(preferredTabId);
 
-    if (activeTab && typeof activeTab.id === "number") {
+    if (typeof activeTabId === "number") {
         try {
-            await browser.tabs.sendMessage(activeTab.id, { type: "opencc.convertNow", settings });
+            await browser.tabs.sendMessage(activeTabId, { type: "opencc.convertNow", settings });
         } catch {
             // Ignore unavailable tabs.
         }
@@ -269,21 +348,24 @@ getEffectiveSettings()
         // Ignore bootstrap failures.
     });
 
-browser.runtime.onMessage.addListener((message) => {
+browser.runtime.onMessage.addListener((message, sender) => {
     if (!message || typeof message !== "object") {
         return undefined;
     }
+
+    const senderTabId = typeof sender?.tab?.id === "number" ? sender.tab.id : null;
+    const preferredTabId = typeof message.tabId === "number" ? message.tabId : senderTabId;
 
     if (message.type === "opencc.getSettings") {
         return getEffectiveSettings().then((settings) => ({ settings }));
     }
 
     if (message.type === "opencc.updateSettings") {
-        return updateSettings(message.settings).then((settings) => ({ settings }));
+        return updateSettings(message.settings, preferredTabId).then((settings) => ({ settings }));
     }
 
     if (message.type === "opencc.convertNow") {
-        return convertActiveTabNow().then((settings) => ({ settings }));
+        return convertActiveTabNow(preferredTabId).then((settings) => ({ settings }));
     }
 
     return undefined;

@@ -139,6 +139,8 @@ const fontOverrideToggle = document.getElementById("font-override-toggle");
 const convertNowButton = document.getElementById("convert-now");
 const status = document.getElementById("status");
 
+let cachedActiveTabId = null;
+
 /**
  * Returns a localized extension string with fallback text.
  * @param {string} key Localization key.
@@ -286,12 +288,38 @@ function readSettingsFromUI() {
 }
 
 /**
+ * Resolves the currently active browser tab id for popup-initiated commands.
+ * @returns {Promise<number | null>} Active tab id when available.
+ */
+async function resolveActiveTabId() {
+    const queryPlans = [
+        { active: true, lastFocusedWindow: true },
+        { active: true, currentWindow: true },
+        { active: true }
+    ];
+
+    for (const queryInfo of queryPlans) {
+        const tabs = await browser.tabs.query(queryInfo);
+        const tabWithId = tabs.find((tab) => typeof tab.id === "number");
+        if (tabWithId && typeof tabWithId.id === "number") {
+            return tabWithId.id;
+        }
+    }
+
+    return null;
+}
+
+/**
  * Saves popup form settings via background script.
  */
 async function saveSettings() {
+    const tabId = await resolveActiveTabId();
+    cachedActiveTabId = tabId;
+
     const { settings } = await browser.runtime.sendMessage({
         type: "opencc.updateSettings",
-        settings: readSettingsFromUI()
+        settings: readSettingsFromUI(),
+        tabId
     });
 
     applySettingsToUI(settings);
@@ -302,7 +330,10 @@ async function saveSettings() {
  * Requests content script conversion on the active tab.
  */
 async function convertNow() {
-    await browser.runtime.sendMessage({ type: "opencc.convertNow" });
+    const tabId = cachedActiveTabId ?? await resolveActiveTabId();
+    cachedActiveTabId = tabId;
+
+    await browser.runtime.sendMessage({ type: "opencc.convertNow", tabId });
     setModeStatus(
         outputSelect.value,
         t("popup_status_conversion_requested", "Conversion requested for active tab")
@@ -316,6 +347,7 @@ async function initPopup() {
     localizeStaticText();
     renderInputOptions();
     renderOutputOptions(inputSelect.value, DEFAULT_CONFIG);
+    cachedActiveTabId = await resolveActiveTabId();
 
     const { settings } = await browser.runtime.sendMessage({ type: "opencc.getSettings" });
     applySettingsToUI(settings);
