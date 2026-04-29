@@ -29,6 +29,8 @@ final class OpenCCSettingsViewModel: ObservableObject {
     
     @Published var extensionState: ExtensionState = .unknown
     @Published var useSafariSettingsCopy = false
+    @Published var error: RefreshError?
+    @Published var isErrorPresented: Bool = false
 #endif
     
     /// Creates the view model with previously stored settings and a persistence callback.
@@ -65,31 +67,41 @@ final class OpenCCSettingsViewModel: ObservableObject {
     }
     
     /// Loads Safari extension state and updates macOS-specific status messaging.
-    func refreshSafariExtensionState() {
-        SFSafariExtensionManager.getStateOfSafariExtension(withIdentifier: extensionBundleIdentifier) { [self] state, error in
-            Task { @MainActor in
-                self.useSafariSettingsCopy = {
-                    if #available(macOS 13, *) {
-                        return true
-                    }
-                    return false
-                }()
-                
-                guard let state, error == nil else {
-                    self.extensionState = .unknown
-                    return
-                }
-                
-                self.extensionState = state.isEnabled ? .on : .off
+    func refreshSafariExtensionState() async {
+        do {
+            let state = try await SFSafariExtensionManager.stateOfSafariExtension(withIdentifier: extensionBundleIdentifier)
+            
+            if #available(macOS 13, *) {
+                self.useSafariSettingsCopy = true
+            } else {
+                self.useSafariSettingsCopy = false
             }
+            
+            self.extensionState = state.isEnabled ? .on : .off
+        } catch {
+            self.extensionState = .unknown
+            self.isErrorPresented = true
+            self.error = RefreshError(error: error)
         }
     }
     
+    
     /// Opens Safari preferences at the extension pane and quits the host app on success.
-    func openSafariPreferences() {
-        SFSafariApplication.showPreferencesForExtension(withIdentifier: extensionBundleIdentifier) { error in
-            guard error == nil else { return }
-            DispatchQueue.main.async { NSApp.terminate(self) }
+    func openSafariPreferences() async {
+        do {
+            try await SFSafariApplication.showPreferencesForExtension(withIdentifier: extensionBundleIdentifier)
+            NSApp.terminate(self) 
+        } catch {
+            self.isErrorPresented = true
+            self.error = RefreshError(error: error)
+        }
+    }
+    
+    struct RefreshError: LocalizedError {
+        let error: any Error
+        
+        var errorDescription: String? {
+            self.error.localizedDescription
         }
     }
 #endif

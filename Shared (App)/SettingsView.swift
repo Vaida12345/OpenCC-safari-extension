@@ -72,7 +72,9 @@ struct OpenCCSettingsView: View {
                     Spacer(minLength: 0)
                     
                     Button {
-                        viewModel.refreshSafariExtensionState()
+                        Task {
+                            await viewModel.refreshSafariExtensionState()
+                        }
                     } label: {
                         Label(extensionStatusTitle, systemImage: extensionStatusSymbol)
                             .font(.caption.weight(.semibold))
@@ -91,7 +93,9 @@ struct OpenCCSettingsView: View {
 
 #if os(macOS)
                 Button {
-                    viewModel.openSafariPreferences()
+                    Task {
+                        await viewModel.openSafariPreferences()
+                    }
                 } label: {
                     Label(viewModel.preferencesButtonTitle, systemImage: "gearshape")
                 }
@@ -114,6 +118,9 @@ struct OpenCCSettingsView: View {
 #if os(macOS)
         .padding(24)
         .frame(width: 480)
+        .alert(isPresented: $viewModel.isErrorPresented, error: viewModel.error) {
+            
+        }
 #endif
     }
 

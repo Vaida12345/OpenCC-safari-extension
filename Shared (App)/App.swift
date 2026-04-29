@@ -23,7 +23,7 @@ struct OpenCCApp: App {
             OpenCCSettingsView(viewModel: viewModel)
 #if os(macOS)
                 .task {
-                    viewModel.refreshSafariExtensionState()
+                    await viewModel.refreshSafariExtensionState()
                 }
 #endif
         }
