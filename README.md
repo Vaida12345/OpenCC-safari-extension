@@ -1,10 +1,9 @@
-# OpenCC (CC Converter)
+# CC Converter
 
 ## Overview
 
-OpenCC is a Safari extension project with iOS and macOS host apps.
+CC Converter is a Safari extension project with iOS and macOS host apps.
 
-- Extension name: `CC Converter`
 - Core conversion engine: `opencc-js` bundled locally as `opencc-full.js`
 - Conversion scope: Web page text in Safari tabs
 - Privacy model: Offline conversion, with only user configuration persisted
@@ -15,6 +14,9 @@ OpenCC is a Safari extension project with iOS and macOS host apps.
 - Configure conversion options from the extension popup.
 - Manage extension state from the host app (especially on macOS).
 - Sync/read settings through the native bridge (`SafariWebExtensionHandler`).
+
+## Installation
+Please [download from App Store](https://apps.apple.com/us/app/cc-converter/id6764072003) or [see release page](https://github.com/Vaida12345/OpenCC-safari-extension/releases).
 
 ## Project Layout
 
