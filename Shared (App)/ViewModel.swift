@@ -31,6 +31,7 @@ final class OpenCCSettingsViewModel: ObservableObject {
     @Published var useSafariSettingsCopy = false
     @Published var error: RefreshError?
     @Published var isErrorPresented: Bool = false
+    @Published var presentExtensionNotFoundAlert: Bool = false
 #endif
     
     /// Creates the view model with previously stored settings and a persistence callback.
@@ -79,6 +80,12 @@ final class OpenCCSettingsViewModel: ObservableObject {
             
             self.extensionState = state.isEnabled ? .on : .off
         } catch {
+            let nsError = error as NSError
+            if nsError.domain == "SFErrorDomain" && nsError.code == 1 {
+                self.presentExtensionNotFoundAlert = true
+                return
+            }
+            
             self.extensionState = .unknown
             self.isErrorPresented = true
             self.error = RefreshError(error: error)
@@ -92,6 +99,12 @@ final class OpenCCSettingsViewModel: ObservableObject {
             try await SFSafariApplication.showPreferencesForExtension(withIdentifier: extensionBundleIdentifier)
             NSApp.terminate(self) 
         } catch {
+            let nsError = error as NSError
+            if nsError.domain == "SFErrorDomain" && nsError.code == 1 {
+                self.presentExtensionNotFoundAlert = true
+                return
+            }
+            
             self.isErrorPresented = true
             self.error = RefreshError(error: error)
         }

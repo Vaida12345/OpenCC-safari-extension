@@ -121,6 +121,12 @@ struct OpenCCSettingsView: View {
         .alert(isPresented: $viewModel.isErrorPresented, error: viewModel.error) {
             
         }
+        .alert("Safari Extension Not Installed", isPresented: $viewModel.presentExtensionNotFoundAlert) {
+            
+        } message: {
+            Text("Please relaunch Safari and this app, and try again.")
+        }
+
 #endif
     }
 
